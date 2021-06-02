@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block page %}
+    <h1>Verify Your Email</h1>
+
+    <form name="verification-form" method="post">
+        <p>
+            <label>Code:</label>
+            <input type="text" name="verification-code" required>
+            <!-- <input type='hidden' name='verification-un' value='{{ username }}'> -->
+        </p>
+        {% if exception %}
+            <p style="color: red;">{{ exceptionmsg }}</p>
+        {% endif %}
+        <input type="submit" value="Verify">
+    </form>
+{% endblock %}

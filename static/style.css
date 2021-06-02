@@ -1,0 +1,80 @@
+body {
+    font-family: "helvetica", sans-serif;
+    text-align: center;
+    padding: 0 100px;
+}
+
+header {
+    margin: 30px 0;
+    border-bottom: 3px solid black;
+    padding-bottom: 30px;
+}
+
+.hiddenform {
+    padding: 0;
+    border: none;
+    display: inline;
+}
+
+.toptitle {
+    font-size: 200%;
+}
+
+a {
+    color: blue;
+}
+
+.areatitle {
+    margin: 20px 0;
+    font-size: 130%;
+}
+
+.container, form {
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 10px 30px;
+}
+
+textarea {
+    font-family: "helvetica", sans-serif;
+    padding: 7px 10px;
+}
+
+table, td, th {
+    border: 2px solid black;
+}
+table {
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 5px 17px;
+}
+
+th {
+    padding: 8px 17px;
+}
+
+img {
+    height: 50px
+}
+
+/* .message-box {
+    border: 2px solid black;
+    border-radius: 5px;
+    margin: 20px 0;
+    padding: 10px 30px;
+    text-align: left;
+}
+
+.messageleft {
+    display: inline-block;
+    vertical-align: top;
+    padding-top: 20px;
+    width: 100px;
+}
+
+.messageright {
+    display: inline-block;
+    width: calc(100% - 100px);
+} */

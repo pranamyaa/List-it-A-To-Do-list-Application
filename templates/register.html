@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block page %}
+    <h1>Register as a New User</h1>
+
+    <form name="register-form" method="post">
+        <p>
+            <label>Email:</label>
+            <input type="text" name="register-em" required>
+        </p>
+        <p>
+            <label>Username:</label>
+            <input type="text" name="register-un" required>
+        </p>
+        <p>
+            <label>Password:</label>
+            <input type="password" name="register-pw" required>
+        </p>
+        {% if exception %}
+            <p style="color: red;">{{ exceptionmsg }}</p>
+        {% endif %}
+        <input type="submit" value="Register">
+    </form>
+{% endblock %}

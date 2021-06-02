@@ -1,0 +1,6 @@
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+ebcognitoenv/
+__pycache__/
