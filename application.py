@@ -205,9 +205,16 @@ def login():
         else:
             accesstoken = tryfindinguser['AuthenticationResult']['AccessToken']
             User_Details = cognito_get_user(accesstoken)
+            emptySession()
+            session['Username']= User_Details['Username']
             flash("Logged in Successfully", 'success')
             return render_template("Home.html", userdetails = User_Details)
     return render_template("login.html", form = form)
+
+@application.route("/logout")
+def logout():
+    emptySession()
+    return redirect(url_for('login'))
 
 
 if __name__ == "__main__":
