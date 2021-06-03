@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Welcome Home</h1>
+    {% if userdetails %}
+        <p>Username of Currently logged in User: {{ userdetails['Username'] }} </p>
+    {% endif %}
+{% endblock content %}
