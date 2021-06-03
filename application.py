@@ -142,11 +142,13 @@ def cognito_get_user(accesstoken):
 def emptySession():
     for key in list(session.keys()):
         session.pop(key, None)
+        print (session.keys())
+
 
 def isLoggedIn():
     return session != {}
 
-@application.route("/", methods = ['GET', 'POST'])
+
 @application.route("/register", methods = ['GET', 'POST'])
 def register():
     form = RegistrationForm()
@@ -167,7 +169,7 @@ def register():
         else:
             print(try_register)
             flash(str(try_register), 'danger')
-    return render_template("register.html", form= form)
+    return render_template("register.html", form= form, sessionlen = len(session))
 
 
 @application.route("/verification/<username>", methods=["GET", "POST"])
@@ -185,11 +187,11 @@ def verification(username):
         else:  # not verified
             print(tryverifying)
             flash(str(tryverifying), 'danger')
-            return render_template("verification.html",username=username, form= form)
+            return render_template("verification.html",username=username, form= form, sessionlen = len(session))
 
-    return render_template("verification.html", username=username, form=form)
+    return render_template("verification.html", username=username, form=form, sessionlen = len(session))
 
-
+@application.route("/", methods = ['GET', 'POST'])
 @application.route("/login", methods =['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -201,19 +203,20 @@ def login():
         if tryfindinguser == {}:
             print("Login Failed")
             flash("Login Failed", 'danger')
-            return render_template("login.html", form= form)
+            return render_template("login.html", form= form, sessionlen = len(session))
         else:
             accesstoken = tryfindinguser['AuthenticationResult']['AccessToken']
             User_Details = cognito_get_user(accesstoken)
             emptySession()
             session['Username']= User_Details['Username']
             flash("Logged in Successfully", 'success')
-            return render_template("Home.html", userdetails = User_Details)
-    return render_template("login.html", form = form)
+            return render_template("Home.html", userdetails = User_Details, sessionlen = len(session))
+    return render_template("login.html", form = form, sessionlen = len(session))
 
 @application.route("/logout")
 def logout():
     emptySession()
+
     return redirect(url_for('login'))
 
 
