@@ -83,7 +83,6 @@ def cognito_confirm_sign_up(username, code):
 
     return ''
 
-
 def initiate_auth(username, password):
     try:
         response = client.admin_initiate_auth(
