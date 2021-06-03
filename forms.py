@@ -4,20 +4,20 @@ from wtforms.validators import DataRequired, Length
 from wtforms.widgets import PasswordInput
 
 class LoginForm(FlaskForm):
-    user_name = StringField('user_name', validators=[DataRequired(), Length(min=2, max=20)])
+    Username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
     Password = StringField('Password', widget=PasswordInput(hide_value=False), validators=[DataRequired()])
     submit = SubmitField('Log in')
 
 class RegistrationForm(FlaskForm):
     Email_ID = StringField('Email_ID', validators=[DataRequired()])
-    user_name = StringField('user_name', validators=[DataRequired(), Length(min=2, max=20)])
+    Username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
     Password = StringField('Password', widget=PasswordInput(hide_value=False), validators=[DataRequired()])
-    given_name = StringField('given_name', validators=[DataRequired()])
-    family_name = StringField('family_name', validators=[DataRequired()])
-    profile_img = FileField('profile_img', validators=[DataRequired()])
-    phone_no = StringField('phone_no', validators=[DataRequired()])
+    First_name = StringField('First_name', validators=[DataRequired()])
+    Last_name = StringField('Last_name', validators=[DataRequired()])
+    Profile_img = FileField('Profile_img', validators=[DataRequired()])
+    Phone_no = StringField('Phone_no', validators=[DataRequired()])
     submit = SubmitField('Sign Up')
 
 class VerificationForm(FlaskForm):
-    verification_code = StringField('verification_code', validators=[DataRequired()])
+    Verification_code = StringField('Verification_code', validators=[DataRequired()])
     submit = SubmitField('verify')

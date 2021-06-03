@@ -15,6 +15,7 @@ application.secret_key = "random"
 USER_POOL_ID = "us-east-2_nagpiCoBg"
 CLIENT_ID = "4j0en13derud9o0ft5lt0ennp0"
 CLIENT_SECRET = "10gt437u94l7di3s3qik38i8g1io7kkpp21s0si2fesogpjl8n5r"
+CurrentUser = None
 
 client = boto3.client('cognito-idp', region_name = 'us-east-2')
 
@@ -142,24 +143,20 @@ def cognito_get_user(accesstoken):
 def emptySession():
     for key in list(session.keys()):
         session.pop(key, None)
-        print (session.keys())
-
-
-def isLoggedIn():
-    return session != {}
-
+    print(len(session))
+    print(session)
 
 @application.route("/register", methods = ['GET', 'POST'])
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         email = form.Email_ID.data
-        username = form.user_name.data
+        username = form.Username.data
         passowod = form.Password.data
-        given_name = form.given_name.data
-        family_name = form.family_name.data
-        phone_no = form.phone_no.data
-        picture = form.profile_img.data
+        given_name = form.First_name.data
+        family_name = form.Last_name.data
+        phone_no = form.Phone_no.data
+        picture = form.Profile_img.data
         filename = secure_filename(picture.filename)
         try_register =cognito_sign_up(email, username, passowod, given_name, family_name, phone_no, filename)
         if try_register == '': # no exception
@@ -169,14 +166,13 @@ def register():
         else:
             print(try_register)
             flash(str(try_register), 'danger')
-    return render_template("register.html", form= form, sessionlen = len(session))
-
+    return render_template("register.html", form= form, CurrentUser = CurrentUser)
 
 @application.route("/verification/<username>", methods=["GET", "POST"])
 def verification(username):
     form = VerificationForm()
     if form.validate_on_submit():
-        code = form.verification_code.data
+        code = form.Verification_code.data
         tryverifying = cognito_confirm_sign_up(username, code)
 
         if tryverifying == '':  # verified successfully
@@ -187,38 +183,40 @@ def verification(username):
         else:  # not verified
             print(tryverifying)
             flash(str(tryverifying), 'danger')
-            return render_template("verification.html",username=username, form= form, sessionlen = len(session))
+            return render_template("verification.html",username=username, form= form, CurrentUser = CurrentUser)
 
-    return render_template("verification.html", username=username, form=form, sessionlen = len(session))
+    return render_template("verification.html", username=username, form=form, CurrentUser = CurrentUser)
 
 @application.route("/", methods = ['GET', 'POST'])
 @application.route("/login", methods =['GET', 'POST'])
 def login():
+    global CurrentUser
     form = LoginForm()
     if form.validate_on_submit():
-        username = form.user_name.data
+        username = form.Username.data
         password = form.Password.data
-        print("Password is:",password)
         tryfindinguser = initiate_auth(username, password)
         if tryfindinguser == {}:
             print("Login Failed")
             flash("Login Failed", 'danger')
-            return render_template("login.html", form= form, sessionlen = len(session))
+            return render_template("login.html", form= form, CurrentUser = CurrentUser)
         else:
             accesstoken = tryfindinguser['AuthenticationResult']['AccessToken']
             User_Details = cognito_get_user(accesstoken)
-            emptySession()
-            session['Username']= User_Details['Username']
+            #emptySession()
+            #session['Username']= User_Details['Username']
+            CurrentUser = User_Details['Username']
+            #print(session)
             flash("Logged in Successfully", 'success')
-            return render_template("Home.html", userdetails = User_Details, sessionlen = len(session))
-    return render_template("login.html", form = form, sessionlen = len(session))
+            return render_template("Home.html", userdetails = User_Details, CurrentUser = CurrentUser)
+    return render_template("login.html", form = form, CurrentUser = CurrentUser)
 
 @application.route("/logout")
 def logout():
-    emptySession()
-
+    global CurrentUser
+    #emptySession()
+    CurrentUser = None
     return redirect(url_for('login'))
-
 
 if __name__ == "__main__":
     application.run(debug=True)
