@@ -15,8 +15,12 @@
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarToggle">
+              {% if session == {} %}
               <a class="nav-item nav-link" href="{{ url_for('login') }}">Login</a>
               <a class="nav-item nav-link" href="{{ url_for('register') }}">Register</a>
+              {% else %}
+              <a class="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a>
+              {% endif %}
           </div>
         </div>
       </nav>
