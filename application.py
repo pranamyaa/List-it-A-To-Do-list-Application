@@ -9,8 +9,8 @@ from forms import LoginForm, RegistrationForm, VerificationForm
 from werkzeug.utils import secure_filename
 
 
-app = Flask(__name__)
-app.secret_key = "random"
+application = Flask(__name__)
+application.secret_key = "random"
 
 USER_POOL_ID = "us-east-2_nagpiCoBg"
 CLIENT_ID = "4j0en13derud9o0ft5lt0ennp0"
@@ -147,8 +147,8 @@ def emptySession():
 def isLoggedIn():
     return session != {}
 
-@app.route("/", methods = ['GET', 'POST'])
-@app.route("/register", methods = ['GET', 'POST'])
+@application.route("/", methods = ['GET', 'POST'])
+@application.route("/register", methods = ['GET', 'POST'])
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -163,13 +163,15 @@ def register():
         try_register =cognito_sign_up(email, username, passowod, given_name, family_name, phone_no, filename)
         if try_register == '': # no exception
             print("Hi I am a new user.")
+            flash("User Registered Successfully..!!", 'success')
             return redirect(url_for('verification', username= username))
         else:
             print(try_register)
+            flash(str(try_register), 'danger')
     return render_template("register.html", form= form)
 
 
-@app.route("/verification/<username>", methods=["GET", "POST"])
+@application.route("/verification/<username>", methods=["GET", "POST"])
 def verification(username):
     form = VerificationForm()
     if form.validate_on_submit():
@@ -178,16 +180,18 @@ def verification(username):
 
         if tryverifying == '':  # verified successfully
             print("Verified Successfully")
+            flash("User Verified Successfully..!!", 'success')
             return redirect('/login')
 
         else:  # not verified
             print(tryverifying)
+            flash(str(tryverifying), 'danger')
             return render_template("verification.html",username=username, form= form)
 
     return render_template("verification.html", username=username, form=form)
 
 
-@app.route("/login", methods =['GET', 'POST'])
+@application.route("/login", methods =['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -197,13 +201,15 @@ def login():
         tryfindinguser = initiate_auth(username, password)
         if tryfindinguser == {}:
             print("Login Failed")
+            flash("Login Failed", 'danger')
             return render_template("login.html", form= form)
         else:
             accesstoken = tryfindinguser['AuthenticationResult']['AccessToken']
             User_Details = cognito_get_user(accesstoken)
+            flash("Logged in Successfully", 'success')
             return render_template("Home.html", userdetails = User_Details)
     return render_template("login.html", form = form)
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    application.run(debug=True)
