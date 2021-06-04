@@ -15,8 +15,6 @@ CLIENT_SECRET = '6373u966d5p8g89e2hil3b5qpg22nq2t50jkjr1n9m03c35kd0f'
 
 client = boto3.client('cognito-idp', region_name='us-east-1')
 
-
-
 def get_secret_hash(username):
     msg = username + CLIENT_ID
     dig = hmac.new(str(CLIENT_SECRET).encode('utf-8'), 
@@ -222,12 +220,10 @@ def login():
             username = request.form['login-un']
             password = request.form['login-pw']
             tryfindinguser = initiate_auth(username, password)
-            
             if tryfindinguser == {}: # not found
                 return render_template("login.html", showmessage=True)
             else: # user found
                 accesstoken = tryfindinguser['AuthenticationResult']['AccessToken']
-
                 emptySession()
                 # does not throw an error even if a desired attribute is not in the user attributes
                 session['loggedinUsername'] = cognito_get_user(accesstoken)['Username']
@@ -238,7 +234,6 @@ def login():
                         session['loggedinName'] = a['Value']
 
                 return redirect('/')
-
         return render_template("login.html", showmessage=False)
 
 @application.route("/logout", methods=["GET", "POST"])
