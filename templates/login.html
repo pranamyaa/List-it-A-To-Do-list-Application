@@ -11,8 +11,9 @@
             <label>Password:</label>
             <input type="password" name="login-pw" required>
         </p>
-        {% if showmessage %}
-            <p style="color: red;">Incorrect username or password.</p>
+        {% if showmessage != '' %}
+            <!-- <p style="color: red;">Incorrect username or password.</p> -->
+            <p style="color: red;">{{ showmessage }}</p>
         {% endif %}
         <input type="submit" value="Login">
     </form>

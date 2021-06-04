@@ -9,7 +9,7 @@
 <body>
     <header>
         <div class="toptitle">eb and cognito test page</div>
-        {% if session != {} %}
+        {% if 'loggedinUsername' in session %}
             <a href="/logout">Logout</a>
         {% else %}
             <a href="/register">Register</a>

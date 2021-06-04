@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block page %}
+    <h1>All Tasks</h1>
+
+    {% for t in tasks %}
+        <div class='container'>
+            <h2>{{ t['Title'] }}</h2>
+        
+        {% for s in getAllSubtasksByParent(t['TaskID']) %}
+            <div>
+                <div>{{ s['Title'] }}</div>
+                <div>{{ s['SubtaskID'] }}</div>
+            </div>
+
+            <!-- <form name="update-sub-form" method="post">
+                <input type="hidden" name="update-sub-parent" value='{{ s['ParentTask'] }}' required>
+                <input type="hidden" name="update-sub-id" value='{{ s['SubtaskID'] }}' required>
+                <p>
+                    <label>Title:</label>
+                    <input type="text" name="update-sub-title" required>
+                </p>
+                <p>
+                    <label>Description:</label>
+                    <input type="text" name="update-sub-desc" required>
+                </p>
+                <p>
+                    <label>Due date:</label>
+                    <input type="text" name="update-sub-due" required>
+                </p>
+                <p>
+                    <label>Done:</label>
+                    <input type="checkbox" name="update-sub-done" value='done'>
+                </p>
+                <p>
+                    <label>Image:</label>
+                    <input type="text" name="update-sub-image" required>
+                </p>
+                <p>
+                    <label>URL:</label>
+                    <input type="text" name="update-sub-url" required>
+                </p>
+                <input type="submit" value="Update">
+            </form> -->
+        {% endfor %}
+
+        </div>
+    {% endfor %}
+
+{% endblock %}

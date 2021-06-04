@@ -4,6 +4,7 @@ import hmac
 import hashlib
 import base64
 import json
+import datetime
 
 from flask import Flask, render_template, request, redirect, session, url_for
 application = Flask(__name__)
@@ -15,6 +16,9 @@ CLIENT_SECRET = '6373u966d5p8g89e2hil3b5qpg22nq2t50jkjr1n9m03c35kd0f'
 
 client = boto3.client('cognito-idp', region_name='us-east-1')
 
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+tasktable = dynamodb.Table('Task')
+subtable = dynamodb.Table('Subtask')
 
 
 def get_secret_hash(username):
@@ -100,7 +104,7 @@ def initiate_auth(username, password):
         )
     except Exception as e:
         print(e)
-        return {}
+        return {}, e
 
     # response will look like:
     # {
@@ -125,7 +129,7 @@ def initiate_auth(username, password):
     #         'RetryAttempts': 0
     #     }
     # }
-    return response
+    return response, ''
 
 # get user info with access token
 # return response
@@ -165,10 +169,86 @@ def cognito_get_user(accesstoken):
 # empty session
 def emptySession():
     for key in list(session.keys()):
-        session.pop(key, None)
+        if key != 'csrftoken':
+            session.pop(key, None)
 
 def isLoggedIn():
-    return session != {}
+    for key in list(session.keys()):
+        if key != 'csrftoken':
+            return True
+    return False
+    # return session != {}
+
+
+
+# return current timestamp string
+def getTimestamp():
+    return str(datetime.datetime.now())
+
+# Owner, TaskID, Title, Desc, Done, Fav
+# returns None if task doesn't exist
+def getTask(taskid, username):
+    response = tasktable.get_item(Key={'TaskID': taskid, 'Owner': username})
+    return response.get('Item')
+
+# ParentTask, SubtaskID, Title, Desc, Due, Done, Image, Url
+# returns None if subtask doesn't exist
+def getSubtask(subtaskid, parenttask):
+    response = subtable.get_item(Key={'SubtaskID': subtaskid, 'ParentTask': parenttask})
+    return response.get('Item')
+
+def addTask(title, desc, done, fav):
+    response = tasktable.put_item(
+       Item={
+            'Owner': session['loggedinUsername'],
+            'TaskID': getTimestamp(),
+            'Title': title,
+            'Desc': desc,
+            'Done': done,
+            'Fav': fav
+        }
+    )
+
+def addSubtask(parenttask, title, desc, due, done, image, url):
+    response = subtable.put_item(
+       Item={
+            'ParentTask': parenttask,
+            'SubtaskID': getTimestamp(),
+            'Title': title,
+            'Desc': desc,
+            'Due': due,
+            'Done': done,
+            'Image': image,
+            'Url': url
+        }
+    )
+
+# returns [] if empty
+def getAllTasksByCurrentUser():
+    scan_kwargs = {
+        'FilterExpression': "#o = :u",
+        "ExpressionAttributeValues": {
+            ':u': session['loggedinUsername']
+        },
+        'ExpressionAttributeNames': {
+            "#o": "Owner"
+        }
+    }
+    response = tasktable.scan(**scan_kwargs)
+
+    return response.get("Items")
+
+# returns [] if empty
+def getAllSubtasksByParent(parenttask):
+    scan_kwargs = {
+        'FilterExpression': "ParentTask = :p",
+        "ExpressionAttributeValues": {
+            ':p': parenttask
+        }
+    }
+    response = subtable.scan(**scan_kwargs)
+
+    return response.get("Items")
 
 
 
@@ -223,10 +303,10 @@ def login():
             password = request.form['login-pw']
             tryfindinguser = initiate_auth(username, password)
             
-            if tryfindinguser == {}: # not found
-                return render_template("login.html", showmessage=True)
+            if tryfindinguser[0] == {}: # not found
+                return render_template("login.html", showmessage=tryfindinguser[1])
             else: # user found
-                accesstoken = tryfindinguser['AuthenticationResult']['AccessToken']
+                accesstoken = tryfindinguser[0]['AuthenticationResult']['AccessToken']
 
                 emptySession()
                 # does not throw an error even if a desired attribute is not in the user attributes
@@ -239,12 +319,20 @@ def login():
 
                 return redirect('/')
 
-        return render_template("login.html", showmessage=False)
+        return render_template("login.html", showmessage='')
 
 @application.route("/logout", methods=["GET", "POST"])
 def logout():
     emptySession()
     return redirect("/login")
+
+@application.route("/tasks", methods=["GET", "POST"])
+def tasks():
+    # print(session['loggedinUsername'])
+    # print(getAllTasksByCurrentUser())
+    return render_template("tasks.html",
+        tasks=getAllTasksByCurrentUser(),
+        getAllSubtasksByParent=getAllSubtasksByParent)
 
 if __name__ == "__main__":
     application.run(debug=True)
