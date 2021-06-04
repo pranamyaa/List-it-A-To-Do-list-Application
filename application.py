@@ -20,6 +20,9 @@ dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 tasktable = dynamodb.Table('Task')
 subtable = dynamodb.Table('Subtask')
 
+s3client = boto3.client('s3', region_name='us-east-1')
+
+
 
 def get_secret_hash(username):
     msg = username + CLIENT_ID
@@ -185,21 +188,25 @@ def isLoggedIn():
 def getTimestamp():
     return str(datetime.datetime.now())
 
-# Owner, TaskID, Title, Desc, Done, Fav
-# returns None if task doesn't exist
-def getTask(taskid, username):
-    response = tasktable.get_item(Key={'TaskID': taskid, 'Owner': username})
-    return response.get('Item')
+# return datetime object
+def strToTime(timestring):
+    return datetime.datetime.strptime(timestring, '%Y-%m-%d %H:%M:%S.%f')
 
-# ParentTask, SubtaskID, Title, Desc, Due, Done, Image, Url
-# returns None if subtask doesn't exist
-def getSubtask(subtaskid, parenttask):
-    response = subtable.get_item(Key={'SubtaskID': subtaskid, 'ParentTask': parenttask})
-    return response.get('Item')
+# # Owner, TaskID, Title, Desc, Done, Fav
+# # returns None if task doesn't exist
+# def getTask(taskid, username):
+#     response = tasktable.get_item(Key = { 'TaskID': taskid, 'Owner': username })
+#     return response.get('Item')
+
+# # ParentTask, SubtaskID, Title, Desc, Due, Done, Image, Url
+# # returns None if subtask doesn't exist
+# def getSubtask(subtaskid, parenttask):
+#     response = subtable.get_item(Key = { 'SubtaskID': subtaskid, 'ParentTask': parenttask })
+#     return response.get('Item')
 
 def addTask(title, desc, done, fav):
     response = tasktable.put_item(
-       Item={
+       Item = {
             'Owner': session['loggedinUsername'],
             'TaskID': getTimestamp(),
             'Title': title,
@@ -211,7 +218,7 @@ def addTask(title, desc, done, fav):
 
 def addSubtask(parenttask, title, desc, due, done, image, url):
     response = subtable.put_item(
-       Item={
+       Item = {
             'ParentTask': parenttask,
             'SubtaskID': getTimestamp(),
             'Title': title,
@@ -249,6 +256,57 @@ def getAllSubtasksByParent(parenttask):
     response = subtable.scan(**scan_kwargs)
 
     return response.get("Items")
+
+def updateTask(taskid, title, desc, done, fav):
+    tasktable.update_item(
+        Key = { 'TaskID': taskid, 'Owner': session['loggedinUsername'] },
+        UpdateExpression = "set Title=:t, #d=:de, Done=:do, Fav=:f",
+        ExpressionAttributeValues = {
+            ':t': title,
+            ':de': desc,
+            ':do': done,
+            ':f': fav
+        },
+        ExpressionAttributeNames = {
+            "#d": "Desc"
+        }
+    )
+
+def updateSubtask(parenttask, subtaskid, title, desc, due, done, image, url):
+    subtable.update_item(
+        Key = { 'ParentTask': parenttask, 'SubtaskID': subtaskid },
+        UpdateExpression = "set Title=:t, #d=:de, Due=:du, Done=:do, Image=:i, #u=:u",
+        ExpressionAttributeValues = {
+            ':t': title,
+            ':de': desc,
+            ':du': due,
+            ':do': done,
+            ':i': image,
+            ':u': url
+        },
+        ExpressionAttributeNames = {
+            "#d": "Desc",
+            "#u": "Url"
+        }
+    )
+
+# to check form checkboxes
+def isChecked(checked):
+    if checked:
+        return 'checked'
+    return ''
+
+
+
+def uploadToS3(file, filename):
+    bucket = ''
+    response = s3client.upload_fileobj(file, bucket, filename, ExtraArgs={'ACL': 'public-read'})
+
+
+
+
+
+
 
 
 
@@ -332,7 +390,8 @@ def tasks():
     # print(getAllTasksByCurrentUser())
     return render_template("tasks.html",
         tasks=getAllTasksByCurrentUser(),
-        getAllSubtasksByParent=getAllSubtasksByParent)
+        getAllSubtasksByParent=getAllSubtasksByParent,
+        isChecked=isChecked)
 
 if __name__ == "__main__":
     application.run(debug=True)

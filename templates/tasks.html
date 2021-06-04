@@ -4,43 +4,88 @@
 
     {% for t in tasks %}
         <div class='container'>
-            <h2>{{ t['Title'] }}</h2>
-        
-        {% for s in getAllSubtasksByParent(t['TaskID']) %}
-            <div>
-                <div>{{ s['Title'] }}</div>
-                <div>{{ s['SubtaskID'] }}</div>
-            </div>
+            <h2>
+                {% if t['Fav'] %}
+                    (favourited)
+                {% endif %}
+                {% if t['Done'] %}
+                    (done)
+                {% endif %}
+                {{ t['Title'] }}
+            </h2>
+            <div>{{ t['Desc'] }}</div>
 
-            <!-- <form name="update-sub-form" method="post">
-                <input type="hidden" name="update-sub-parent" value='{{ s['ParentTask'] }}' required>
-                <input type="hidden" name="update-sub-id" value='{{ s['SubtaskID'] }}' required>
-                <p>
-                    <label>Title:</label>
-                    <input type="text" name="update-sub-title" required>
-                </p>
-                <p>
-                    <label>Description:</label>
-                    <input type="text" name="update-sub-desc" required>
-                </p>
-                <p>
-                    <label>Due date:</label>
-                    <input type="text" name="update-sub-due" required>
-                </p>
-                <p>
-                    <label>Done:</label>
-                    <input type="checkbox" name="update-sub-done" value='done'>
-                </p>
-                <p>
-                    <label>Image:</label>
-                    <input type="text" name="update-sub-image" required>
-                </p>
-                <p>
-                    <label>URL:</label>
-                    <input type="text" name="update-sub-url" required>
-                </p>
-                <input type="submit" value="Update">
-            </form> -->
+            <button onclick="toggleeditform(this)">Edit</button>
+            <div style='display: none;'>
+                <form name="update-task-form" method="post">
+                    <input type="hidden" name="update-task-id" value='{{ t['TaskID'] }}'>
+                    <p>
+                        <label>Title:</label>
+                        <input type="text" name="update-task-title" value='{{ t['Title'] }}' required>
+                    </p>
+                    <p>
+                        <label>Description:</label>
+                        <input type="text" name="update-task-desc" value='{{ t['Desc'] }}'>
+                    </p>
+                    <p>
+                        <label>Done:</label>
+                        <input type="checkbox" name="update-task-done" value='done' {{ isChecked(t['Done']) }}>
+                    </p>
+                    <p>
+                        <label>Favourited:</label>
+                        <input type="checkbox" name="update-task-fav" value='fav' {{ isChecked(t['Fav']) }}>
+                    </p>
+                    <input type="submit" value="Update">
+                </form>
+            </div>
+        
+
+        {% for s in getAllSubtasksByParent(t['TaskID']) %}
+            <div class='subtask' style='background-color: lightgrey;'>
+                <h3>
+                    {% if s['Done'] %}
+                        (done)
+                    {% endif %}
+                    {{ s['Title'] }}
+                </h3>
+                <div>{{ s['Desc'] }}</div>
+                <div>{{ s['Due'] }}</div>
+                <div>{{ s['Image'] }}</div>
+                <div>{{ s['Url'] }}</div>
+
+                <button onclick="toggleeditform(this)">Edit</button>
+                <div style='display: none;'>
+                    <form name="update-sub-form" method="post">
+                        <input type="hidden" name="update-sub-parent" value='{{ s['ParentTask'] }}'>
+                        <input type="hidden" name="update-sub-id" value='{{ s['SubtaskID'] }}'>
+                        <p>
+                            <label>Title:</label>
+                            <input type="text" name="update-sub-title" required>
+                        </p>
+                        <p>
+                            <label>Description:</label>
+                            <input type="text" name="update-sub-desc">
+                        </p>
+                        <p>
+                            <label>Due date:</label>
+                            <input type="text" name="update-sub-due">
+                        </p>
+                        <p>
+                            <label>Done:</label>
+                            <input type="checkbox" name="update-sub-done" value='done' {{ isChecked(s['Done']) }}>
+                        </p>
+                        <p>
+                            <label>Image:</label>
+                            <input type="text" name="update-sub-image">
+                        </p>
+                        <p>
+                            <label>URL:</label>
+                            <input type="text" name="update-sub-url">
+                        </p>
+                        <input type="submit" value="Update">
+                    </form>
+                </div>
+            </div>
         {% endfor %}
 
         </div>
