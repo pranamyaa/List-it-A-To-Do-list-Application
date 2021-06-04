@@ -6,7 +6,7 @@ import base64
 import json
 import datetime
 
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for,flash
 application = Flask(__name__)
 application.secret_key = "random"
 
@@ -15,7 +15,6 @@ CLIENT_ID = '7e6fl49b57k982roaudequp1hi'
 CLIENT_SECRET = '6373u966d5p8g89e2hil3b5qpg22nq2t50jkjr1n9m03c35kd0f'
 
 client = boto3.client('cognito-idp', region_name='us-east-1')
-
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 tasktable = dynamodb.Table('Task')
 subtable = dynamodb.Table('Subtask')
@@ -179,8 +178,6 @@ def isLoggedIn():
     return False
     # return session != {}
 
-
-
 # return current timestamp string
 def getTimestamp():
     return str(datetime.datetime.now())
@@ -250,8 +247,6 @@ def getAllSubtasksByParent(parenttask):
 
     return response.get("Items")
 
-
-
 @application.route("/")
 def root():
     return render_template("index.html")
@@ -269,14 +264,16 @@ def register():
             tryregistering = cognito_sign_up(email, username, password, name)
 
             if tryregistering == '': # no exception
-                return redirect(url_for('verification', username=request.form["register-un"]))
+                flash("Registration Successful..!!", 'success')
+                return redirect(url_for('verification', username=username))
 
             else: # somethings wrong
-                return render_template("register.html", exception=True, exceptionmsg=tryregistering)
+                flash(str(tryregistering), 'danger')
+                return render_template("register.html")
 
             return redirect("/login")
 
-        return render_template("register.html", exception=False)
+        return render_template("register.html")
 
 @application.route("/verification/<username>", methods=["GET", "POST"])
 def verification(username):
@@ -285,13 +282,15 @@ def verification(username):
         tryverifying = cognito_confirm_sign_up(username, code)
 
         if tryverifying == '': # verified successfully
+            flash("User verification successful..Please Login..!!", 'success')
             return redirect('/login')
 
         else: # not verified
             print(tryverifying)
-            return render_template("verification.html", exception=True, exceptionmsg=tryverifying, username=username)
+            flash(str(tryverifying), 'danger')
+            return render_template("verification.html", username=username)
     
-    return render_template("verification.html", exception=False, username=username)
+    return render_template("verification.html", username=username)
 
 @application.route("/login", methods=["GET", "POST"])
 def login():
@@ -304,10 +303,10 @@ def login():
             tryfindinguser = initiate_auth(username, password)
             
             if tryfindinguser[0] == {}: # not found
-                return render_template("login.html", showmessage=tryfindinguser[1])
+                flash("Login Failed..please try again", 'danger')
+                return render_template("login.html")
             else: # user found
                 accesstoken = tryfindinguser[0]['AuthenticationResult']['AccessToken']
-
                 emptySession()
                 # does not throw an error even if a desired attribute is not in the user attributes
                 session['loggedinUsername'] = cognito_get_user(accesstoken)['Username']
@@ -316,10 +315,10 @@ def login():
                         session['loggedinEmail'] = a['Value']
                     if a['Name'] == 'name':
                         session['loggedinName'] = a['Value']
-
+                flash("Login Successful..!!")
                 return redirect('/tasks')
 
-        return render_template("login.html", showmessage='')
+        return render_template("login.html")
 
 @application.route("/logout", methods=["GET", "POST"])
 def logout():

@@ -1,16 +1,17 @@
 {% extends "base.html" %}
-{% block page %}
-    <h1>Verify Your Email</h1>
-
-    <form name="verification-form" method="post">
-        <p>
-            <label>Code:</label>
-            <input type="text" name="verification-code" required>
-            <!-- <input type='hidden' name='verification-un' value='{{ username }}'> -->
-        </p>
-        {% if exception %}
-            <p style="color: red;">{{ exceptionmsg }}</p>
-        {% endif %}
-        <input type="submit" value="Verify">
-    </form>
+{% block content %}
+    <div class="content-section">
+        <form name="verification-form" method="POST">
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Verification of the email</legend>
+                <div class="form-group">
+                    <label class="form-control-label">Verification Code: (Please enter the code from the recent email for verification)</label>
+                    <input class="form-control form-control-lg" type="text" name="verification-code" required>
+                </div>
+            </fieldset>
+            <div class="form-group">
+                <input class="btn btn-outline-info" type="submit" value="Verify">
+            </div>
+        </form>
+    </div>
 {% endblock %}

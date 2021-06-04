@@ -1,22 +1,26 @@
 {% extends "base.html" %}
-{% block page %}
-    <h1>Login page</h1>
-
-    <form name="login-form" method="post">
-        <p>
-            <label>Username:</label>
-            <input type="text" name="login-un" required>
-        </p>
-        <p>
-            <label>Password:</label>
-            <input type="password" name="login-pw" required>
-        </p>
-        {% if showmessage != '' %}
-            <!-- <p style="color: red;">Incorrect username or password.</p> -->
-            <p style="color: red;">{{ showmessage }}</p>
-        {% endif %}
-        <input type="submit" value="Login">
-    </form>
-    Not a member?
-    <a href="/register">Register</a>
+{% block content %}
+    <div class="content-section">
+        <form name="login-form" method="post">
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Sign In</legend>
+                <div class="form-group">
+                    <label class="form-control-label">Username:</label>
+                    <input class="form-control form-control-lg" type="text" name="login-un" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label">Password:</label>
+                    <input class="form-control form-control-lg" type="password" name="login-pw" required>
+                </div>
+            </fieldset>
+            <div class="form-group">
+                <input class="btn btn-outline-info" type="submit" value="Login">
+            </div>
+        </form>
+    </div>
+    <div class="border-top pt-3">
+        <small class="text-muted">
+            Don't Have An Account? <a class="ml-3" href="/register">Sign Up</a>
+        </small>
+    </div>
 {% endblock %}
