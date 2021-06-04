@@ -317,7 +317,7 @@ def login():
                     if a['Name'] == 'name':
                         session['loggedinName'] = a['Value']
 
-                return redirect('/')
+                return redirect('/tasks')
 
         return render_template("login.html", showmessage='')
 
