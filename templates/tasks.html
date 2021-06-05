@@ -74,34 +74,35 @@
             <div>
                 <button onclick="toggleeditform(this)">Add new subtask</button>
                 <div style='display: none;'>
-                    <form name='add-sub-form' method='post'>
+                    <form name='add-sub-form' method='post' enctype='multipart/form-data'>
                         <input type="hidden" name="tasks-type" value='add-subtask'>
                         <input type="hidden" name="add-sub-parent" value='{{ t['TaskID'] }}'>
-                    <p>
-                        <label>Title:</label>
-                        <input type="text" name="add-sub-title" required>
-                    </p>
-                    <p>
-                        <label>Description:</label>
-                        <input type="text" name="add-sub-desc">
-                    </p>
-                    <p>
-                        <label>Due:</label>
-                        <input type="date" name='add-sub-due'>
-                    </p>
-                    <p>
-                        <label>Done:</label>
-                        <input type="checkbox" name="add-sub-done" value='done'>
-                    </p>
-                    <p>
-                        <label>Image:</label>
-                        <input type="text" name='add-sub-image'>
-                    </p>
-                    <p>
-                        <label>URL:</label>
-                        <input type="text" name='add-sub-url'>
-                    </p>
-                    <input type="submit" value="Add">
+                        <p>
+                            <label>Title:</label>
+                            <input type="text" name="add-sub-title" required>
+                        </p>
+                        <p>
+                            <label>Description:</label>
+                            <input type="text" name="add-sub-desc">
+                        </p>
+                        <p>
+                            <label>Due:</label>
+                            <input type="date" name='add-sub-due'>
+                        </p>
+                        <p>
+                            <label>Done:</label>
+                            <input type="checkbox" name="add-sub-done" value='done'>
+                        </p>
+                        <p>
+                            <label>Image:</label>
+                            <!-- <input type="text" name='add-sub-image'> -->
+                            <input type="file" name="add-sub-image" accept="image/png, image/jpeg">
+                        </p>
+                        <p>
+                            <label>URL:</label>
+                            <input type="text" name='add-sub-url'>
+                        </p>
+                        <input type="submit" value="Add">
                     </form>
                 </div>
             </div>
@@ -109,19 +110,28 @@
         {% for s in getAllSubtasksByParent(t['TaskID']) %}
             <div class='subtask' style='background-color: lightgrey;'>
                 <h3>
+                    {% if s['Url'] != '' %}
+                        <a href='{{ s['Url'] }}'>
+                    {% endif %}
                     {% if s['Done'] %}
                         (done)
                     {% endif %}
                     {{ s['Title'] }}
+                    {% if s['Url'] != '' %}
+                        </a>
+                    {% endif %}
                 </h3>
                 <div>{{ s['Desc'] }}</div>
                 <div>{{ formatDate(s['Due']) }}</div>
-                <div>{{ s['Image'] }}</div>
-                <div>{{ s['Url'] }}</div>
+                <!-- <div>{{ s['Image'] }}</div> -->
+                {% if s['Image'] != '' %}
+                    <div><img src='https://cca3imgs.s3.amazonaws.com/{{ s['Image'] }}'></div>
+                {% endif %}
+                <!-- <div>{{ s['Url'] }}</div> -->
 
                 <button onclick="toggleeditform(this)">Edit this subtask</button>
                 <div style='display: none;'>
-                    <form name="update-sub-form" method="post">
+                    <form name="update-sub-form" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="tasks-type" value='update-subtask'>
                         <input type="hidden" name="update-sub-parent" value='{{ s['ParentTask'] }}'>
                         <input type="hidden" name="update-sub-id" value='{{ s['SubtaskID'] }}'>
@@ -143,7 +153,14 @@
                         </p>
                         <p>
                             <label>Image:</label>
-                            <input type="text" name="update-sub-image" value='{{ s['Image'] }}'>
+                            <input type="hidden" name="update-sub-image-old" value='{{ s['Image'] }}'>
+                            {% if s['Image'] == '' %}
+                                <input type="file" name="update-sub-image" accept="image/png, image/jpeg">
+                            {% else %}
+                                <input type="file" name="update-sub-image" accept="image/png, image/jpeg" onchange="changeimg(this)">
+                                <label>Keep uploaded image</label>
+                                <input type="checkbox" name="update-sub-image-keep" value="keep-image" onclick="removeimgcheckbox(this)" checked>
+                            {% endif %}
                         </p>
                         <p>
                             <label>URL:</label>
@@ -156,6 +173,7 @@
                     <input type="hidden" name="tasks-type" value='delete-subtask'>
                     <input type="hidden" name="delete-sub-parent" value='{{ s['ParentTask'] }}'>
                     <input type="hidden" name="delete-sub-id" value='{{ s['SubtaskID'] }}'>
+                    <input type="hidden" name="delete-sub-image" value='{{ s['Image'] }}'>
                     <input type='submit' value='Delete this subtask'>
                 </form>
             </div>
