@@ -5,6 +5,8 @@ import hashlib
 import base64
 import json
 import datetime
+import requests
+from io import BytesIO
 
 from flask import Flask, render_template, request, redirect, session, url_for, flash
 application = Flask(__name__)
@@ -21,6 +23,7 @@ tasktable = dynamodb.Table('Task')
 subtable = dynamodb.Table('Subtask')
 
 s3client = boto3.client('s3', region_name='us-east-1')
+bucketname = 'cca3imgs'
 
 
 
@@ -216,11 +219,11 @@ def addTask(title, desc, done, fav):
         }
     )
 
-def addSubtask(parenttask, title, desc, due, done, image, url):
+def addSubtask(parenttask, subtaskid, title, desc, due, done, image, url):
     response = subtable.put_item(
        Item = {
             'ParentTask': parenttask,
-            'SubtaskID': getTimestamp(),
+            'SubtaskID': subtaskid,
             'Title': title,
             'Desc': desc,
             'Due': due,
@@ -305,8 +308,12 @@ def isKeyIncluded(key, dictionary):
 def deleteTask(taskid):
     tasktable.delete_item(Key = { 'TaskID': taskid, 'Owner': session['loggedinUsername'] })
 
-def deleteSubtask(parenttask, subtaskid):
+def deleteSubtask(parenttask, subtaskid, image):
     subtable.delete_item(Key = { 'ParentTask': parenttask, 'SubtaskID': subtaskid })
+
+    if image != '':
+        deleteFromS3(image)
+
 
 # returns formatted date 'yyyy-mm-dd' to 'dd Mon yyyy'
 # or '' to ''
@@ -317,17 +324,16 @@ def formatDate(original):
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     return original[8:] + ' ' + months[int(month)-1] + ' ' + original[:4]
 
-# print(formatDate('2015-12-25'))
+# returns new file name including extension
+def uploadToS3(file, subtaskid):
+    extension = file.filename[file.filename.rfind('.'):len(file.filename)]
+    realfilename = subtaskid + extension
 
-def uploadToS3(file, filename):
-    bucket = ''
-    response = s3client.upload_fileobj(file, bucket, filename, ExtraArgs={'ACL': 'public-read'})
+    response = s3client.upload_fileobj(file, bucketname, realfilename, ExtraArgs={'ACL': 'public-read'})
+    return realfilename
 
-
-
-
-
-
+def deleteFromS3(filename):
+    response = s3client.delete_object(Bucket = bucketname, Key = filename)
 
 
 
@@ -427,10 +433,14 @@ def tasks():
 
         # add subtask
         if request.form['tasks-type'] == 'add-subtask':
+            currenttimestamp = getTimestamp()
             addsubdone = False
+            imgname = ''
             if isKeyIncluded('add-sub-done', request.form):
                 addsubdone = True
-            addSubtask(request.form['add-sub-parent'], request.form['add-sub-title'], request.form['add-sub-desc'], request.form['add-sub-due'], addsubdone, request.form['add-sub-image'], request.form['add-sub-url'])
+            if request.files['add-sub-image'].filename != '':
+                imgname = uploadToS3(request.files['add-sub-image'], currenttimestamp)
+            addSubtask(request.form['add-sub-parent'], currenttimestamp, request.form['add-sub-title'], request.form['add-sub-desc'], request.form['add-sub-due'], addsubdone, imgname, request.form['add-sub-url'])
 
         # update task
         if request.form['tasks-type'] == 'update-task':
@@ -445,17 +455,34 @@ def tasks():
         # update subtask
         if request.form['tasks-type'] == 'update-subtask':
             updatesubdone = False
+            imgname = ''
             if isKeyIncluded('update-sub-done', request.form):
                 updatesubdone = True
-            updateSubtask(request.form['update-sub-parent'], request.form['update-sub-id'], request.form['update-sub-title'], request.form['update-sub-desc'], request.form['update-sub-due'], updatesubdone, request.form['update-sub-image'], request.form['update-sub-url'])
+            # if new image is uploaded
+            if request.files['update-sub-image'].filename != '':
+                # if old image exists
+                if request.form['update-sub-image-old'] != '':
+                    deleteFromS3(request.form['update-sub-image-old'])
+                imgname = uploadToS3(request.files['update-sub-image'], request.form['update-sub-id'])
+            # if new image is not uploaded
+            else:
+                # keep original image if exists
+                if isKeyIncluded('update-sub-image-keep', request.form):
+                    imgname = request.form['update-sub-image-old']
+                # remove old image if exists
+                else:
+                    deleteFromS3(request.form['update-sub-image-old'])
+            updateSubtask(request.form['update-sub-parent'], request.form['update-sub-id'], request.form['update-sub-title'], request.form['update-sub-desc'], request.form['update-sub-due'], updatesubdone, imgname, request.form['update-sub-url'])
 
         # delete task
         if request.form['tasks-type'] == 'delete-task':
             deleteTask(request.form['delete-task-id'])
+            for st in getAllSubtasksByParent(request.form['delete-task-id']):
+                deleteSubtask(request.form['delete-task-id'], st['SubtaskID'], st['Image'])
 
         # delete subtask
         if request.form['tasks-type'] == 'delete-subtask':
-            deleteSubtask(request.form['delete-sub-parent'], request.form['delete-sub-id'])
+            deleteSubtask(request.form['delete-sub-parent'], request.form['delete-sub-id'], request.form['delete-sub-image'])
 
     return render_template("tasks.html",
         tasks=getAllTasksByCurrentUser(),
