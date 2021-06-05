@@ -1,80 +1,83 @@
 body {
-    font-family: "helvetica", sans-serif;
-    text-align: center;
-    padding: 0 100px;
+  background: #fafafa;
+  color: #333333;
+  margin-top: 5rem;
 }
 
-header {
-    margin: 30px 0;
-    border-bottom: 3px solid black;
-    padding-bottom: 30px;
+h1, h2, h3, h4, h5, h6 {
+  color: #444444;
 }
 
-.hiddenform {
-    padding: 0;
-    border: none;
-    display: inline;
+.bg-steel {
+  background-color: #5f788a;
 }
 
-.toptitle {
-    font-size: 200%;
+.site-header .navbar-nav .nav-link {
+  color: #cbd5db;
 }
 
-a {
-    color: blue;
+.site-header .navbar-nav .nav-link:hover {
+  color: #ffffff;
 }
 
-.areatitle {
-    margin: 20px 0;
-    font-size: 130%;
+.site-header .navbar-nav .nav-link.active {
+  font-weight: 500;
 }
 
-.container, form {
-    border: 2px solid black;
-    border-radius: 5px;
-    padding: 10px 30px;
+.content-section {
+  background: #ffffff;
+  padding: 10px 30px;
+  border: 1px solid #dddddd;
+  border-radius: 3px;
+  margin-bottom: 20px;
 }
 
-textarea {
-    font-family: "helvetica", sans-serif;
-    padding: 7px 10px;
+.article-title {
+  color: #444444;
 }
 
-table, td, th {
-    border: 2px solid black;
-}
-table {
-    border-collapse: collapse;
+a.article-title:hover {
+  color: #428bca;
+  text-decoration: none;
 }
 
-th, td {
-    padding: 5px 17px;
+.article-content {
+  white-space: pre-line;
 }
 
-th {
-    padding: 8px 17px;
+.article-img {
+  height: 165px;
+  width: 165px;
+  margin-right: 16px;
 }
 
-img {
-    height: 50px
+.article-metadata {
+  padding-bottom: 1px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #e3e3e3
 }
 
-/* .message-box {
-    border: 2px solid black;
-    border-radius: 5px;
-    margin: 20px 0;
-    padding: 10px 30px;
-    text-align: left;
+.article-metadata a:hover {
+  color: #333;
+  text-decoration: none;
 }
 
-.messageleft {
-    display: inline-block;
-    vertical-align: top;
-    padding-top: 20px;
-    width: 100px;
+.article-svg {
+  width: 25px;
+  height: 25px;
+  vertical-align: middle;
 }
 
-.messageright {
-    display: inline-block;
-    width: calc(100% - 100px);
-} */
+.account-img {
+  height: 120px;
+  width: 120px;
+  margin-right: 20px;
+  margin-bottom: 16px;
+}
+
+.account-heading {
+  font-size: 2.5rem;
+}
+
+
+

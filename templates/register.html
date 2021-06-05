@@ -1,23 +1,50 @@
 {% extends "base.html" %}
-{% block page %}
-    <h1>Register as a New User</h1>
-
-    <form name="register-form" method="post">
-        <p>
-            <label>Email:</label>
-            <input type="text" name="register-em" required>
-        </p>
-        <p>
-            <label>Username:</label>
-            <input type="text" name="register-un" required>
-        </p>
-        <p>
-            <label>Password:</label>
-            <input type="password" name="register-pw" required>
-        </p>
-        {% if exception %}
-            <p style="color: red;">{{ exceptionmsg }}</p>
-        {% endif %}
-        <input type="submit" value="Register">
-    </form>
+{% block content %}
+    <div class="content-section">
+        <form name="register-form" method="POST" enctype="multipart/form-data">
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Join Today</legend>
+                <div class="form-group">
+                    <label class="form-control-label">Email:</label>
+                    <input class="form-control form-control-lg" type="text" name="register-em" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label">Username:</label>
+                    <input class="form-control form-control-lg" type="text" name="register-un" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label">Password:</label>
+                    <input class="form-control form-control-lg" type="password" name="register-pw" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="form-control-label">First Name:</label>
+                        <input class="form-control form-control-lg" type="text" name="register-fn" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="form-control-label">Last Name:</label>
+                        <input class="form-control form-control-lg" type="text" name="register-ln" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label class="form-control-label">Phone Number:</label>
+                        <input class="form-control form-control-lg" type="text" name="register-pn" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="form-control-label">Profile Image:</label>
+                        <input class="form-control form-control-lg" type="file" name="register-pi" required accept="image/png, image/jpeg">
+                    </div>
+                </div>
+            </fieldset>
+            <div class="form-group">
+                <input class="btn btn-outline-info" type="submit" value="Register">
+            </div>
+        </form>
+    </div>
+    <div class="border-top pt-3">
+        <small class="text-muted">
+            Already Have An Account? <a class="ml-3" href="/login">Sign In</a>
+        </small>
+    </div>
 {% endblock %}

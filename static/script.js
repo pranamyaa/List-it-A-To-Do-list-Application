@@ -3,14 +3,15 @@
 window.addEventListener('load', function () {
 });
 
-// function toggleeditform(button) {
-//     let formdiv = button.nextElementSibling
-//     console.log(formdiv.style.display)
-//     if (formdiv.style.display === "none") {
-//         console.log("none to ''")
-//         formdiv.style.display = ""
-//     } else {
-//         console.log("'' to none")
-//         formdiv.style.display = "none"
-//     }
-// }
+function toggleeditform(button) {
+    let formdiv = button.nextElementSibling
+    if (formdiv.style.display === "none") {
+        formdiv.style.display = ""
+    } else {
+        formdiv.style.display = "none"
+    }
+}
+
+function confirmdelete(tasktype) {
+    return confirm('Are you sure you want to delete this '+tasktype+'?')
+}
