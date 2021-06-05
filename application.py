@@ -6,7 +6,7 @@ import base64
 import json
 import datetime
 
-from flask import Flask, render_template, request, redirect, session, url_for,flash
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 application = Flask(__name__)
 application.secret_key = "random"
 
@@ -15,9 +15,13 @@ CLIENT_ID = '7e6fl49b57k982roaudequp1hi'
 CLIENT_SECRET = '6373u966d5p8g89e2hil3b5qpg22nq2t50jkjr1n9m03c35kd0f'
 
 client = boto3.client('cognito-idp', region_name='us-east-1')
+
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 tasktable = dynamodb.Table('Task')
 subtable = dynamodb.Table('Subtask')
+
+s3client = boto3.client('s3', region_name='us-east-1')
+
 
 
 def get_secret_hash(username):
@@ -178,25 +182,31 @@ def isLoggedIn():
     return False
     # return session != {}
 
+
+
 # return current timestamp string
 def getTimestamp():
     return str(datetime.datetime.now())
 
-# Owner, TaskID, Title, Desc, Done, Fav
-# returns None if task doesn't exist
-def getTask(taskid, username):
-    response = tasktable.get_item(Key={'TaskID': taskid, 'Owner': username})
-    return response.get('Item')
+# return datetime object
+def strToTime(timestring):
+    return datetime.datetime.strptime(timestring, '%Y-%m-%d %H:%M:%S.%f')
 
-# ParentTask, SubtaskID, Title, Desc, Due, Done, Image, Url
-# returns None if subtask doesn't exist
-def getSubtask(subtaskid, parenttask):
-    response = subtable.get_item(Key={'SubtaskID': subtaskid, 'ParentTask': parenttask})
-    return response.get('Item')
+# # Owner, TaskID, Title, Desc, Done, Fav
+# # returns None if task doesn't exist
+# def getTask(taskid, username):
+#     response = tasktable.get_item(Key = { 'TaskID': taskid, 'Owner': username })
+#     return response.get('Item')
+
+# # ParentTask, SubtaskID, Title, Desc, Due, Done, Image, Url
+# # returns None if subtask doesn't exist
+# def getSubtask(subtaskid, parenttask):
+#     response = subtable.get_item(Key = { 'SubtaskID': subtaskid, 'ParentTask': parenttask })
+#     return response.get('Item')
 
 def addTask(title, desc, done, fav):
     response = tasktable.put_item(
-       Item={
+       Item = {
             'Owner': session['loggedinUsername'],
             'TaskID': getTimestamp(),
             'Title': title,
@@ -208,7 +218,7 @@ def addTask(title, desc, done, fav):
 
 def addSubtask(parenttask, title, desc, due, done, image, url):
     response = subtable.put_item(
-       Item={
+       Item = {
             'ParentTask': parenttask,
             'SubtaskID': getTimestamp(),
             'Title': title,
@@ -246,6 +256,82 @@ def getAllSubtasksByParent(parenttask):
     response = subtable.scan(**scan_kwargs)
 
     return response.get("Items")
+
+def updateTask(taskid, title, desc, done, fav):
+    tasktable.update_item(
+        Key = { 'TaskID': taskid, 'Owner': session['loggedinUsername'] },
+        UpdateExpression = "set Title=:t, #d=:de, Done=:do, Fav=:f",
+        ExpressionAttributeValues = {
+            ':t': title,
+            ':de': desc,
+            ':do': done,
+            ':f': fav
+        },
+        ExpressionAttributeNames = {
+            "#d": "Desc"
+        }
+    )
+
+def updateSubtask(parenttask, subtaskid, title, desc, due, done, image, url):
+    subtable.update_item(
+        Key = { 'ParentTask': parenttask, 'SubtaskID': subtaskid },
+        UpdateExpression = "set Title=:t, #d=:de, Due=:du, Done=:do, Image=:i, #u=:u",
+        ExpressionAttributeValues = {
+            ':t': title,
+            ':de': desc,
+            ':du': due,
+            ':do': done,
+            ':i': image,
+            ':u': url
+        },
+        ExpressionAttributeNames = {
+            "#d": "Desc",
+            "#u": "Url"
+        }
+    )
+
+# to check form checkboxes
+def isChecked(checked):
+    if checked:
+        return 'checked'
+    return ''
+
+def isKeyIncluded(key, dictionary):
+    for k in list(dictionary.keys()):
+        if k == key:
+            return True
+    return False
+
+def deleteTask(taskid):
+    tasktable.delete_item(Key = { 'TaskID': taskid, 'Owner': session['loggedinUsername'] })
+
+def deleteSubtask(parenttask, subtaskid):
+    subtable.delete_item(Key = { 'ParentTask': parenttask, 'SubtaskID': subtaskid })
+
+# returns formatted date 'yyyy-mm-dd' to 'dd Mon yyyy'
+# or '' to ''
+def formatDate(original):
+    if original == '':
+        return ''
+    month = original[5:7]
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    return original[8:] + ' ' + months[int(month)-1] + ' ' + original[:4]
+
+# print(formatDate('2015-12-25'))
+
+def uploadToS3(file, filename):
+    bucket = ''
+    response = s3client.upload_fileobj(file, bucket, filename, ExtraArgs={'ACL': 'public-read'})
+
+
+
+
+
+
+
+
+
+
 
 @application.route("/")
 def root():
@@ -327,11 +413,55 @@ def logout():
 
 @application.route("/tasks", methods=["GET", "POST"])
 def tasks():
-    # print(session['loggedinUsername'])
-    # print(getAllTasksByCurrentUser())
+    if request.method == "POST":
+
+        # add task
+        if request.form['tasks-type'] == 'add-task':
+            addtaskdone = False
+            addtaskfav = False
+            if isKeyIncluded('add-task-done', request.form):
+                addtaskdone = True
+            if isKeyIncluded('add-task-fav', request.form):
+                addtaskfav = True
+            addTask(request.form['add-task-title'], request.form['add-task-desc'], addtaskdone, addtaskfav)
+
+        # add subtask
+        if request.form['tasks-type'] == 'add-subtask':
+            addsubdone = False
+            if isKeyIncluded('add-sub-done', request.form):
+                addsubdone = True
+            addSubtask(request.form['add-sub-parent'], request.form['add-sub-title'], request.form['add-sub-desc'], request.form['add-sub-due'], addsubdone, request.form['add-sub-image'], request.form['add-sub-url'])
+
+        # update task
+        if request.form['tasks-type'] == 'update-task':
+            updatetaskdone = False
+            taskfav = False
+            if isKeyIncluded('update-task-done', request.form):
+                updatetaskdone = True
+            if isKeyIncluded('update-task-fav', request.form):
+                taskfav = True
+            updateTask(request.form['update-task-id'], request.form['update-task-title'], request.form['update-task-desc'], updatetaskdone, taskfav)
+
+        # update subtask
+        if request.form['tasks-type'] == 'update-subtask':
+            updatesubdone = False
+            if isKeyIncluded('update-sub-done', request.form):
+                updatesubdone = True
+            updateSubtask(request.form['update-sub-parent'], request.form['update-sub-id'], request.form['update-sub-title'], request.form['update-sub-desc'], request.form['update-sub-due'], updatesubdone, request.form['update-sub-image'], request.form['update-sub-url'])
+
+        # delete task
+        if request.form['tasks-type'] == 'delete-task':
+            deleteTask(request.form['delete-task-id'])
+
+        # delete subtask
+        if request.form['tasks-type'] == 'delete-subtask':
+            deleteSubtask(request.form['delete-sub-parent'], request.form['delete-sub-id'])
+
     return render_template("tasks.html",
         tasks=getAllTasksByCurrentUser(),
-        getAllSubtasksByParent=getAllSubtasksByParent)
+        getAllSubtasksByParent=getAllSubtasksByParent,
+        isChecked=isChecked,
+        formatDate=formatDate)
 
 if __name__ == "__main__":
     application.run(debug=True)
