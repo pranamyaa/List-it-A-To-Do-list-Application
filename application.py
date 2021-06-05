@@ -338,7 +338,6 @@ def deleteFromS3(filename):
 
 
 
-
 @application.route("/")
 def root():
     return render_template("index.html")
