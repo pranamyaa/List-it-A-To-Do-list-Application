@@ -11,3 +11,7 @@ function toggleeditform(button) {
         formdiv.style.display = "none"
     }
 }
+
+function confirmdelete(tasktype) {
+    return confirm('Are you sure you want to delete this '+tasktype+'?')
+}
