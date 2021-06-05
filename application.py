@@ -13,26 +13,26 @@ application = Flask(__name__)
 application.secret_key = "random"
 
 ##PK
-USER_POOL_ID = 'us-east-2_ruiTY0hP5'
-CLIENT_ID = '14d1pjd3tjchpg77kcld5oam6q'
-CLIENT_SECRET = 'jgrtpnhoq01h77tt9kjh74k1gn22r6l4l7g3ctc8bhtfoigrmkq'
-client = boto3.client('cognito-idp', region_name='us-east-2')
-dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-s3client = boto3.client('s3', region_name='us-east-2')
-tasktable = dynamodb.Table('Task')
-subtable = dynamodb.Table('Subtask')
-bucketname = 'cca3images'
-
-#Sohee
-#USER_POOL_ID = 'us-east-1_ML8n8zEda'
-#CLIENT_ID = '7e6fl49b57k982roaudequp1hi'
-#CLIENT_SECRET = '6373u966d5p8g89e2hil3b5qpg22nq2t50jkjr1n9m03c35kd0f'
-#client = boto3.client('cognito-idp', region_name='us-east-1')
-#dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+#USER_POOL_ID = 'us-east-2_ruiTY0hP5'
+#CLIENT_ID = '14d1pjd3tjchpg77kcld5oam6q'
+#CLIENT_SECRET = 'jgrtpnhoq01h77tt9kjh74k1gn22r6l4l7g3ctc8bhtfoigrmkq'
+#client = boto3.client('cognito-idp', region_name='us-east-2')
+#dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+#s3client = boto3.client('s3', region_name='us-east-2')
 #tasktable = dynamodb.Table('Task')
 #subtable = dynamodb.Table('Subtask')
-#s3client = boto3.client('s3', region_name='us-east-1')
-#bucketname = 'cca3imgs'
+#bucketname = 'cca3images'
+
+#Sohee
+USER_POOL_ID = 'us-east-1_ML8n8zEda'
+CLIENT_ID = '7e6fl49b57k982roaudequp1hi'
+CLIENT_SECRET = '6373u966d5p8g89e2hil3b5qpg22nq2t50jkjr1n9m03c35kd0f'
+client = boto3.client('cognito-idp', region_name='us-east-1')
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+tasktable = dynamodb.Table('Task')
+subtable = dynamodb.Table('Subtask')
+s3client = boto3.client('s3', region_name='us-east-1')
+bucketname = 'cca3imgs'
 
 
 
