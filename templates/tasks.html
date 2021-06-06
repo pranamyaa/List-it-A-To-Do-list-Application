@@ -4,7 +4,7 @@
         <button class="btn btn-outline-info" onclick="toggleeditform(this)">Add new task</button>
         <div style='display: none;'>
             <br>
-            <form name='add-task-form' method='post'>
+            <form name='add-task-form' method='post' class='form-box'>
                 <input type="hidden" name="tasks-type" value='add-task'>
                 <p class="form-group">
                     <label class="form-control-label">Title:</label>
@@ -37,10 +37,12 @@
                   <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-{{ loop.index }}" aria-expanded="false" aria-controls="flush-collapse-{{ loop.index }}" >
                     {{ loop.index }}.
                     {% if t['Fav'] %}
-                        (favourited)
+                        <!-- (favourited) -->
+                        &#11088;
                     {% endif %}
                     {% if t['Done'] %}
-                        (done)
+                        <!-- (done) -->
+                        &#9989;
                     {% endif %}
                     {{ t['Title'] }}
                   </button>
@@ -51,7 +53,7 @@
                     <button class="btn btn-outline-info" onclick="toggleeditform(this)">Edit this task</button>
                     <div style='display: none;'>
                         <br>
-                        <form name="update-task-form" method="post">
+                        <form name="update-task-form" method="post" class='form-box'>
                             <input type="hidden" name="tasks-type" value='update-task'>
                             <input type="hidden" name="update-task-id" value='{{ t['TaskID'] }}'>
                             <p class="form-group">
@@ -86,7 +88,7 @@
                         <button class="btn btn-outline-info" onclick="toggleeditform(this)">Add new subtask</button>
                         <div style='display: none;'>
                             <br>
-                            <form name='add-sub-form' method='post' enctype='multipart/form-data'>
+                            <form name='add-sub-form' method='post' enctype='multipart/form-data' class='form-box'>
                                 <input type="hidden" name="tasks-type" value='add-subtask'>
                                 <input type="hidden" name="add-sub-parent" value='{{ t['TaskID'] }}'>
                                 <p class="form-group">
@@ -129,13 +131,14 @@
                                       <button class="accordion-button btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ loop.index }}" aria-expanded="true" aria-controls="collapse-{{ loop.index }}">
                                         {{ loop.index }}
                                         {% if s['Done'] %}
-                                            (done)
+                                            <!-- (done) -->
+                                            &#9989;
                                         {% endif %}
                                         {{ s['Title'] }}
                                       </button>
                                 </h2>
                                 <div id="collapse-{{ loop.index }}" class="accordion-collapse collapse show" aria-labelledby="heading-{{ loop.index }}" data-bs-parent="#accordionExample">
-                                      <div class="accordion-body" style='background-color: lightgrey;'>
+                                      <div class="accordion-body">
                                             <p>Subtask Description: {{ s['Desc'] }}</p>
                                             <p>Subtask Due Date: {{ s['Due'] }}</p>
                                             {% if s['Url'] != '' %}
@@ -148,7 +151,7 @@
                                             <button class="btn btn-outline-info" onclick="toggleeditform(this)">Edit this subtask</button>
                                             <div style='display: none;'>
                                                 <br>
-                                                <form name="update-sub-form" method="post" enctype="multipart/form-data">
+                                                <form name="update-sub-form" method="post" enctype="multipart/form-data" class='form-box'>
                                                     <input type="hidden" name="tasks-type" value='update-subtask'>
                                                     <input type="hidden" name="update-sub-parent" value='{{ s['ParentTask'] }}'>
                                                     <input type="hidden" name="update-sub-id" value='{{ s['SubtaskID'] }}'>

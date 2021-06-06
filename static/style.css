@@ -160,3 +160,9 @@ a.article-title:hover {
 .accordion-option .toggle-accordion.active:before {
   content: "Collapse All";
 }
+
+.form-box {
+  border: 3px solid #4997a452;
+  padding: 10px;
+  border-radius: 8px;
+}
