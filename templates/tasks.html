@@ -142,55 +142,58 @@
                                                 <p>Subtask Link: <a href='{{ s['Url'] }}'>{{ s['Url'] }}</a></p>
                                             {% endif %}
                                             {% if s['Image'] != '' %}
-                                                <div><img class="img-fluid" src="https://cca3images.s3.amazonaws.com/{{ s['Image'] }}" width="200" height="200"></div>
+                                                <div>Image: <img class="img-fluid" src="https://cca3images.s3.amazonaws.com/{{ s['Image'] }}" width="200" height="200"></div>
                                             {% endif %}
-                                            <button onclick="toggleeditform(this)">Edit this subtask</button>
+                                            <br>
+                                            <button class="btn btn-outline-info" onclick="toggleeditform(this)">Edit this subtask</button>
                                             <div style='display: none;'>
-                                    <form name="update-sub-form" method="post" enctype="multipart/form-data">
-                                        <input type="hidden" name="tasks-type" value='update-subtask'>
-                                        <input type="hidden" name="update-sub-parent" value='{{ s['ParentTask'] }}'>
-                                        <input type="hidden" name="update-sub-id" value='{{ s['SubtaskID'] }}'>
-                                        <p>
-                                            <label>Title:</label>
-                                            <input type="text" name="update-sub-title" value='{{ s['Title'] }}' required>
-                                        </p>
-                                        <p>
-                                            <label>Description:</label>
-                                            <input type="text" name="update-sub-desc" value='{{ s['Desc'] }}'>
-                                        </p>
-                                        <p>
-                                            <label>Due date:</label>
-                                            <input type="date" name="update-sub-due" value='{{ s['Due'] }}'>
-                                        </p>
-                                        <p>
-                                            <label>Done:</label>
-                                            <input type="checkbox" name="update-sub-done" value='done' {{ isChecked(s['Done']) }}>
-                                        </p>
-                                        <p>
-                                            <label>Image:</label>
-                                            <input type="hidden" name="update-sub-image-old" value='{{ s['Image'] }}'>
-                                            {% if s['Image'] == '' %}
-                                                <input type="file" name="update-sub-image" accept="image/png, image/jpeg">
-                                            {% else %}
-                                                <input type="file" name="update-sub-image" accept="image/png, image/jpeg" onchange="changeimg(this)">
-                                                <label>Keep uploaded image</label>
-                                                <input type="checkbox" name="update-sub-image-keep" value="keep-image" onclick="removeimgcheckbox(this)" checked>
-                                            {% endif %}
-                                        </p>
-                                        <p>
-                                            <label>URL:</label>
-                                            <input type="text" name="update-sub-url" value='{{ s['Url'] }}'>
-                                        </p>
-                                        <input type="submit" value="Update">
-                                    </form>
-                                </div>
+                                                <br>
+                                                <form name="update-sub-form" method="post" enctype="multipart/form-data">
+                                                    <input type="hidden" name="tasks-type" value='update-subtask'>
+                                                    <input type="hidden" name="update-sub-parent" value='{{ s['ParentTask'] }}'>
+                                                    <input type="hidden" name="update-sub-id" value='{{ s['SubtaskID'] }}'>
+                                                    <p class="form-group">
+                                                        <label class="form-control-label">Title:</label>
+                                                        <input class="form-control form-control-lg" type="text" name="update-sub-title" value='{{ s['Title'] }}' required>
+                                                    </p>
+                                                    <p class="form-group">
+                                                        <label class="form-control-label">Description:</label>
+                                                        <input class="form-control form-control-lg" type="text" name="update-sub-desc" value='{{ s['Desc'] }}'>
+                                                    </p>
+                                                    <p class="form-group">
+                                                        <label class="form-control-label">Due date:</label>
+                                                        <input class="form-control form-control-lg" type="date" name="update-sub-due" value='{{ s['Due'] }}'>
+                                                    </p>
+                                                    <p class="form-group">
+                                                        <label class="form-control-label">Done:</label>
+                                                        <input type="checkbox" name="update-sub-done" value='done' {{ isChecked(s['Done']) }}>
+                                                    </p>
+                                                    <p class="form-group">
+                                                        <label class="form-control-label">Image:</label>
+                                                        <input class="form-control form-control-lg" type="hidden" name="update-sub-image-old" value='{{ s['Image'] }}'>
+                                                        {% if s['Image'] == '' %}
+                                                            <input type="file" name="update-sub-image" accept="image/png, image/jpeg">
+                                                        {% else %}
+                                                            <input class="form-control form-control-lg" type="file" name="update-sub-image" accept="image/png, image/jpeg" onchange="changeimg(this)">
+                                                            <label class="form-control-label">Keep uploaded image</label>
+                                                            <input class="form-control form-control-lg" type="checkbox" name="update-sub-image-keep" value="keep-image" onclick="removeimgcheckbox(this)" checked>
+                                                        {% endif %}
+                                                    </p>
+                                                    <p class="form-group">
+                                                        <label class="form-control-label">URL:</label>
+                                                        <input class="form-control form-control-lg" type="text" name="update-sub-url" value='{{ s['Url'] }}'>
+                                                    </p>
+                                                    <input class="btn btn-outline-info" type="submit" value="Update">
+                                                </form>
+                                            </div>
                                             <form name='delete-sub-form' method='post' onsubmit="return confirmdelete('subtask')">
-                                    <input type="hidden" name="tasks-type" value='delete-subtask'>
-                                    <input type="hidden" name="delete-sub-parent" value='{{ s['ParentTask'] }}'>
-                                    <input type="hidden" name="delete-sub-id" value='{{ s['SubtaskID'] }}'>
-                                    <input type="hidden" name="delete-sub-image" value='{{ s['Image'] }}'>
-                                    <input type='submit' value='Delete this subtask'>
-                                </form>
+                                                    <br>
+                                                    <input type="hidden" name="tasks-type" value='delete-subtask'>
+                                                    <input type="hidden" name="delete-sub-parent" value='{{ s['ParentTask'] }}'>
+                                                    <input type="hidden" name="delete-sub-id" value='{{ s['SubtaskID'] }}'>
+                                                    <input type="hidden" name="delete-sub-image" value='{{ s['Image'] }}'>
+                                                    <input class="btn btn-outline-info" type='submit' value='Delete this subtask'>
+                                            </form>
                                       </div>
                                 </div>
                             </div>
