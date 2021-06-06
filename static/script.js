@@ -31,3 +31,5 @@ function changeimg(fileinput) {
     let checkbox = fileinput.nextElementSibling.nextElementSibling
     checkbox.checked = false
 }
+
+
