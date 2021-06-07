@@ -33,6 +33,7 @@
         <div class="accordion accordion-flush" id="accordionFlushExample">
             {% for t in tasks %}
               <div class="accordion-item">
+                <div class='jump-here' id='{{ t['TaskID'] }}'></div>
                 <h2 class="accordion-header" id= "flush-heading-{{ loop.index }}">
                   <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-{{ loop.index }}" aria-expanded="false" aria-controls="flush-collapse-{{ loop.index }}" >
                     {{ loop.index }}.
