@@ -287,6 +287,15 @@ def updateTask(taskid, title, desc, done, fav):
         }
     )
 
+def updateTaskDone(taskid, done):
+    tasktable.update_item(
+        Key = { 'TaskID': taskid, 'Owner': session['loggedinUsername'] },
+        UpdateExpression = "set Done=:do",
+        ExpressionAttributeValues = {
+            ':do': done
+        }
+    )
+
 def updateSubtask(parenttask, subtaskid, title, desc, due, done, image, url):
     subtable.update_item(
         Key = { 'ParentTask': parenttask, 'SubtaskID': subtaskid },
@@ -325,6 +334,12 @@ def deleteSubtask(parenttask, subtaskid, image):
 
     if image != '':
         deleteFromS3(image)
+
+def hasSubtask(parenttask):
+    if getAllSubtasksByParent(parenttask) == []:
+        return False
+    return True
+
 
 
 # returns formatted date 'yyyy-mm-dd' to 'dd Mon yyyy'
@@ -482,7 +497,8 @@ def tasks():
                     imgname = request.form['update-sub-image-old']
                 # remove old image if exists
                 else:
-                    deleteFromS3(request.form['update-sub-image-old'])
+                    if request.form['update-sub-image-old'] != '':
+                        deleteFromS3(request.form['update-sub-image-old'])
             updateSubtask(request.form['update-sub-parent'], request.form['update-sub-id'], request.form['update-sub-title'], request.form['update-sub-desc'], request.form['update-sub-due'], updatesubdone, imgname, request.form['update-sub-url'])
 
         # delete task
@@ -495,11 +511,29 @@ def tasks():
         if request.form['tasks-type'] == 'delete-subtask':
             deleteSubtask(request.form['delete-sub-parent'], request.form['delete-sub-id'], request.form['delete-sub-image'])
 
+        # check task done state
+        for t in getAllTasksByCurrentUser():
+            # print('Task:', t)
+            subtaskexist = False
+            subtaskdonestate = True
+            for s in getAllSubtasksByParent(t['TaskID']):
+                # print('Subtask:', s)
+                subtaskexist = True
+                if s['Done'] == False:
+                    subtaskdonestate = False
+            # print(subtaskdonestate)
+            if subtaskexist:
+                if subtaskdonestate != t['Done']:
+                    # print('no match')
+                    updateTaskDone(t['TaskID'], subtaskdonestate)
+
     return render_template("tasks.html",
         tasks=getAllTasksByCurrentUser(),
         getAllSubtasksByParent=getAllSubtasksByParent,
         isChecked=isChecked,
-        formatDate=formatDate)
+        formatDate=formatDate,
+        hasSubtask=hasSubtask,
+        bucketname=bucketname)
 
 if __name__ == "__main__":
     application.run(debug=True)

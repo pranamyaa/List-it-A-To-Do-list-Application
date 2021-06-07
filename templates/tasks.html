@@ -65,10 +65,12 @@
                                 <input class="form-control form-control-lg" type="text" name="update-task-desc" value='{{ t['Desc'] }}'>
                             </p>
                             <div class="form-row">
-                                <p class="form-group col-md-6">
-                                    <label class="form-control-label">Completed:</label>
-                                    <input type="checkbox" name="update-task-done" value='done' {{ isChecked(t['Done']) }}>
-                                </p>
+                                {% if hasSubtask(t['TaskID'])==False %}
+                                    <p class="form-group col-md-6">
+                                        <label class="form-control-label">Completed:</label>
+                                        <input type="checkbox" name="update-task-done" value='done' {{ isChecked(t['Done']) }}>
+                                    </p>
+                                {% endif %}
                                 <p class="form-group col-md-6">
                                     <label class="form-control-label">Make it Favourite?:</label>
                                     <input type="checkbox" name="update-task-fav" value='fav' {{ isChecked(t['Fav']) }}>
@@ -145,7 +147,7 @@
                                                 <p>Subtask Link: <a href='{{ s['Url'] }}'>{{ s['Url'] }}</a></p>
                                             {% endif %}
                                             {% if s['Image'] != '' %}
-                                                <div>Image: <img class="img-fluid" src="https://cca3images.s3.amazonaws.com/{{ s['Image'] }}" width="200" height="200"></div>
+                                                <div>Image: <img class="img-fluid" src="https://{{ bucketname }}.s3.amazonaws.com/{{ s['Image'] }}" width="200" height="200"></div>
                                             {% endif %}
                                             <br>
                                             <button class="btn btn-outline-info" onclick="toggleeditform(this)">Edit this subtask</button>
@@ -179,7 +181,7 @@
                                                         {% else %}
                                                             <input class="form-control form-control-lg" type="file" name="update-sub-image" accept="image/png, image/jpeg" onchange="changeimg(this)">
                                                             <label class="form-control-label">Keep uploaded image</label>
-                                                            <input class="form-control form-control-lg" type="checkbox" name="update-sub-image-keep" value="keep-image" onclick="removeimgcheckbox(this)" checked>
+                                                            <input type="checkbox" name="update-sub-image-keep" value="keep-image" onclick="removeimgcheckbox(this)" checked>
                                                         {% endif %}
                                                     </p>
                                                     <p class="form-group">
