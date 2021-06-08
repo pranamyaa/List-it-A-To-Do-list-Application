@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="content-section">
+        <legend class="border-bottom mb-4">Profile</legend>
+        <div>
+            <div class="profile-top">
+                {% if pic != '' %}
+                    <img class="profile-img" src="https://{{ bucketname }}.s3.amazonaws.com/{{ pic }}"><br>
+                {% else %}
+                    <div class="profile-img">
+                        <div class='profile-img-placeholder'>
+                            <br>No<br>profile<br>picture
+                        </div>
+                    </div>
+                {% endif %}
+                <button class="btn btn-outline-info profile-button pic" onclick="toggleeprofileditform('img')">Edit picture</button>
+            </div>
+            <div class="profile-top">
+                <div>
+                    Username: {{ username }}
+                </div>
+                <div>
+                    Email: {{ email }}
+                </div>
+                <div>
+                    Name: {{ fname }} {{ lname }}
+                    <button class="btn btn-outline-info profile-button text" onclick="toggleeprofileditform('name')">Edit name</button>
+                </div>
+                <div>
+                    Phone number: {{ phone }}
+                    <button class="btn btn-outline-info profile-button text" onclick="toggleeprofileditform('phone')">Edit phone number</button>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div id='profile-edit-form-img' style='display: none;'>
+                <br>
+                <form name="update-user-img-form" method="post" enctype="multipart/form-data" class='form-box'>
+                    <input type="hidden" name="profile-change-type" value='change-img'>
+                    <input type="hidden" name="update-user-image-old" value='{{ pic }}'>
+                    <p class="form-group">
+                        <label class="form-control-label">Profile picture:</label>
+                        {% if pic == '' %}
+                            <input type="file" name="update-user-image" accept="image/png, image/jpeg">
+                        {% else %}
+                            <input class="form-control form-control-lg" type="file" name="update-user-image" accept="image/png, image/jpeg" onchange="changeimg(this)">
+                            <label class="form-control-label">Delete image</label>
+                            <input type="checkbox" name="update-user-image-delete" value="keep-image" onclick="removeimgcheckbox(this)" checked>
+                        {% endif %}
+                    </p>
+                    <input class="btn btn-outline-info" type="submit" value="Edit">
+                </form>
+            </div>
+
+            <div id='profile-edit-form-name' style='display: none;'>
+                <br>
+                <form name="update-user-name-form" method="post" class='form-box'>
+                    <input type="hidden" name="profile-change-type" value='change-name'>
+                    <p class="form-group">
+                        <label class="form-control-label">First name:</label>
+                        <input class="form-control form-control-lg" type="text" name="update-user-fname" value='{{ fname }}' required>
+                    </p>
+                    <p class="form-group">
+                        <label class="form-control-label">Last name:</label>
+                        <input class="form-control form-control-lg" type="text" name="update-user-lname" value='{{ lname }}' required>
+                    </p>
+                    <input class="btn btn-outline-info" type="submit" value="Edit">
+                </form>
+            </div>
+
+            <div id='profile-edit-form-phone' style='display: none;'>
+                <br>
+                <form name="update-user-phone-form" method="post" class='form-box'>
+                    <input type="hidden" name="profile-change-type" value='change-phone'>
+                    <p class="form-group">
+                        <label class="form-control-label">Phone number:</label>
+                        <div>
+                            <div class="form-input-phone-plus">+</div>
+                            <input class="form-control form-control-lg form-input-phone" type="number" name="update-user-phone" value='{{ phone.replace("+", "") }}' required>
+                        </div>
+                    </p>
+                    <input class="btn btn-outline-info" type="submit" value="Edit">
+                </form>
+            </div>
+</div>
+{% endblock %}

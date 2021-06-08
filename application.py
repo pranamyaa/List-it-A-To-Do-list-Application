@@ -128,8 +128,6 @@ def cognito_sign_up_new(email, username, password, firstname, lastname, phone, i
 
     return ''
 
-
-
 # check if user can provide a correct code sent
 # return '' or exception message
 def cognito_confirm_sign_up(username, code):
@@ -242,6 +240,54 @@ def isLoggedIn():
     return False
     # return session != {}
 
+def updateUser(fname='', lname='', phone='', img='', removeimg=False):
+    attributes = []
+
+    if fname != '':
+        attributes.append({ 'Name': "given_name", 'Value': fname })
+        print('changing fname now')
+    if lname != '':
+        attributes.append({ 'Name': "family_name", 'Value': lname })
+        print('changing lname now')
+    if phone != '':
+        attributes.append({ 'Name': "phone_number", 'Value': phone })
+        print('changing phone now')
+    if img != '':
+        attributes.append({ 'Name': "picture", 'Value': img })
+        print('changing img now')
+    if removeimg:
+        attributes.append({ 'Name': "picture", 'Value': '' })
+        print('removing img now')
+
+    try:
+        response = client.update_user_attributes(
+            UserAttributes=attributes,
+            # [
+                # {
+                #     'Name': "given_name",
+                #     'Value': fname
+                # },
+                # {
+                #     'Name': "family_name",
+                #     'Value': lname
+                # },
+                # # {
+                # #     'Name': "phone_number",
+                # #     'Value': phone
+                # # },
+                # # {
+                # #     'Name': "picture",
+                # #     'Value': img
+                # # },
+            # ],
+            AccessToken=session['loggedinAccesstoken']
+        )
+    except Exception as e:
+        print(e)
+        return e
+
+    return ''
+
 
 
 # return current timestamp string
@@ -290,6 +336,9 @@ def addSubtask(parenttask, subtaskid, title, desc, due, done, image, url):
         }
     )
 
+def getTaskIDtoSort(alltasks):
+    return alltasks['TaskID']
+
 # returns [] if empty
 def getAllTasksByCurrentUser():
     scan_kwargs = {
@@ -303,7 +352,12 @@ def getAllTasksByCurrentUser():
     }
     response = tasktable.scan(**scan_kwargs)
 
-    return response.get("Items")
+    alltasks = response.get("Items")
+    alltasks.sort(key=getTaskIDtoSort)
+    return alltasks
+
+def getSubtaskIDtoSort(allsubtasks):
+    return allsubtasks['SubtaskID']
 
 # returns [] if empty
 def getAllFavouritedTasksByCurrentUser():
@@ -319,7 +373,9 @@ def getAllFavouritedTasksByCurrentUser():
     }
     response = tasktable.scan(**scan_kwargs)
 
-    return response.get("Items")
+    alltasks = response.get("Items")
+    alltasks.sort(key=getTaskIDtoSort)
+    return alltasks
 
 # returns [] if empty
 def getAllSubtasksByParent(parenttask):
@@ -331,7 +387,9 @@ def getAllSubtasksByParent(parenttask):
     }
     response = subtable.scan(**scan_kwargs)
 
-    return response.get("Items")
+    allsubtasks = response.get("Items")
+    allsubtasks.sort(key=getSubtaskIDtoSort)
+    return allsubtasks
 
 def updateTask(taskid, title, desc, done, fav):
     tasktable.update_item(
@@ -428,6 +486,31 @@ def deleteFromS3(filename):
     response = s3client.delete_object(Bucket = bucketname, Key = filename)
 
 
+def getUserDetails(accesstoken):
+    try:
+        getuser = cognito_get_user(accesstoken)
+
+        emptySession()
+
+        # does not throw an error even if a desired attribute does not exist
+        session['loggedinAccesstoken'] = accesstoken
+        session['loggedinUsername'] = getuser['Username']
+        for a in getuser['UserAttributes']:
+            if a['Name'] == 'email':
+                session['loggedinEmail'] = a['Value']
+            if a['Name'] == 'given_name':
+                session['loggedinFname'] = a['Value']
+            if a['Name'] == 'family_name':
+                session['loggedinLname'] = a['Value']
+            if a['Name'] == 'phone_number':
+                session['loggedinPhone'] = a['Value']
+            if a['Name'] == 'picture':
+                session['loggedinPic'] = a['Value']
+    except Exception as e:
+        print(e)
+        return e
+
+    return ''
 
 def uploadProfileImgToS3(file, imgname):
     response = s3client.upload_fileobj(file, bucketname, imgname, ExtraArgs={'ACL': 'public-read'})
@@ -453,7 +536,7 @@ def register():
             password = request.form["register-pw"]
             firstname = request.form["register-fn"]
             lastname = request.form["register-ln"]
-            phone = request.form["register-pn"]
+            phone = '+' + request.form["register-pn"].replace("+", "")
             img = request.files["register-pi"]
             realimgname = username + getExtension(img.filename)
             tryregistering = cognito_sign_up_new(email, username, password, firstname, lastname, phone, realimgname)
@@ -503,20 +586,7 @@ def login():
                 return render_template("login.html")
             else: # user found
                 accesstoken = tryfindinguser[0]['AuthenticationResult']['AccessToken']
-                emptySession()
-                # does not throw an error even if a desired attribute is not in the user attributes
-                session['loggedinUsername'] = cognito_get_user(accesstoken)['Username']
-                for a in cognito_get_user(accesstoken)['UserAttributes']:
-                    if a['Name'] == 'email':
-                        session['loggedinEmail'] = a['Value']
-                    if a['Name'] == 'given_name':
-                        session['loggedinFname'] = a['Value']
-                    if a['Name'] == 'family_name':
-                        session['loggedinLname'] = a['Value']
-                    if a['Name'] == 'phone_number':
-                        session['loggedinPhone'] = a['Value']
-                    if a['Name'] == 'picture':
-                        session['loggedinPic'] = a['Value']
+                getUserDetails(accesstoken)
                 flash("Login Successful..!!")
                 return redirect('/home')
 
@@ -624,19 +694,110 @@ def home():
     print(session)
     # if request.method == "POST":
     #     return
-    firstname = ''
+    name = ''
     try:
-        firstname = session['loggedinFname']
+        name = session['loggedinFname']
     except:
-        firstname = session['loggedinUsername']
+        name = session['loggedinUsername']
     
     favourited = getAllFavouritedTasksByCurrentUser()
     
-    return render_template("home.html", favourited=favourited, name=firstname)
+    return render_template("home.html", favourited=favourited, name=name)
         # tasks=getAllTasksByCurrentUser(),
         # getAllSubtasksByParent=getAllSubtasksByParent,
         # isChecked=isChecked,
         # formatDate=formatDate)
+
+@application.route("/user", methods=["GET", "POST"])
+def user():
+    # email = fname = lname = phone = pic = ''
+    # try:
+    #     email = session['loggedinEmail']
+    # except:
+    #     pass
+    # try:
+    #     fname = session['loggedinFname']
+    # except:
+    #     pass
+    # try:
+    #     lname = session['loggedinLname']
+    # except:
+    #     pass
+    # try:
+    #     phone = session['loggedinPhone']
+    # except:
+    #     pass
+    # try:
+    #     pic = session['loggedinPic']
+    # except:
+    #     pass
+
+    if request.method == "POST":
+        if request.form['profile-change-type'] == 'change-img':
+            print('change img')
+            print(request.files)
+            newimg = request.files['update-user-image']
+
+            # delete old image
+            if isKeyIncluded('update-user-image-delete', request.form):
+                print('delete current picture')
+                ## update dynamodb img to ''
+                updateUser(removeimg=True)
+                ## remove image from s3
+                deleteFromS3(request.form['update-user-image-old'])
+            
+            # new image is added
+            if newimg.filename != '':
+                # old image exists
+                if request.form['update-user-image-old']:
+                    print('replace image')
+                    ## remove old image from s3
+                    deleteFromS3(request.form['update-user-image-old'])
+
+                ## add image to s3
+                print('add new image')
+                realimgname = session['loggedinUsername'] + getExtension(newimg.filename)
+                uploadProfileImgToS3(newimg, realimgname)
+                ## update dynamodb img to new
+                updateUser(img=realimgname)
+
+        if request.form['profile-change-type'] == 'change-name':
+            newfname = request.form['update-user-fname']
+            newlname = request.form['update-user-lname']
+            updateUser(fname=newfname, lname=newlname)
+
+        if request.form['profile-change-type'] == 'change-phone':
+            # request.form['update-user-phone']
+            print(type(request.form['update-user-phone']))
+            newphone = '+' + request.form['update-user-phone'].replace("+", "")
+            updateUser(phone=newphone)
+        
+            # tryfindinguser = initiate_auth(username, password)[0]['AuthenticationResult']['AccessToken']
+
+        getUserDetails(session['loggedinAccesstoken'])
+        print('user details updated')
+
+    fname = lname = phone = pic = ''
+    try:
+        fname = session['loggedinFname']
+    except:
+        pass
+    try:
+        lname = session['loggedinLname']
+    except:
+        pass
+    try:
+        phone = session['loggedinPhone']
+    except:
+        pass
+    try:
+        pic = session['loggedinPic']
+    except:
+        pass
+
+    return render_template("user.html", bucketname=bucketname,
+        username=session['loggedinUsername'], email=session['loggedinEmail'],
+        fname=fname, lname=lname, phone=phone, pic=pic)
 
 if __name__ == "__main__":
     application.run(debug=True)

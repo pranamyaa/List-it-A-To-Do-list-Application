@@ -32,4 +32,14 @@ function changeimg(fileinput) {
     checkbox.checked = false
 }
 
-
+function toggleeprofileditform(attr) {
+    let thisid = 'profile-edit-form-' + attr
+    let formdiv = document.getElementById(thisid)
+    if (formdiv.style.display === "none") {
+        formdiv.style.display = ""
+        // console.log(formdiv)
+    } else {
+        formdiv.style.display = "none"
+        // console.log(formdiv)
+    }
+}

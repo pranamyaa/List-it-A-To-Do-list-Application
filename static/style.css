@@ -213,3 +213,53 @@ a.article-title:hover {
   margin-top: -56px;
   position: absolute;
 }
+
+.profile-img {
+  width: 80px;
+  height: 80px;
+  border: 3px solid #c1c1c1;
+  border-radius: 10px;
+  margin-right: 20px;
+}
+
+.profile-img-placeholder {
+  color: #c1c1c1;
+  line-height: 14px;
+  text-align: center;
+}
+
+.profile-top {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.profile-button {
+  font-size: 75%;
+  padding: 0 4px;
+  border: 2px solid;
+  /* margin: 0 20px; */
+}
+
+.profile-button.text {
+  position: absolute;
+  right: 50px;
+}
+
+.profile-button.pic {
+  /* position: absolute; */
+  /* left: */
+  /* bottom: 50px; */
+  margin-right: 0px;
+  margin-left: 2px;
+}
+
+.form-input-phone-plus {
+  width: 15px;
+  font-size: 130%;
+  display: inline-block;
+}
+
+.form-input-phone {
+  width: calc(100% - 20px);
+  display: inline-block;
+}
