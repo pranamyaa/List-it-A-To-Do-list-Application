@@ -1,19 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
     <div class="content-section">
-        <legend class="border-bottom mb-4">Favourited Tasks</legend>
-        <div class='favourited-button-container'>
-            {% for f in favourited %}
-                <a href='/tasks#{{ f['TaskID'] }}' class='favourited-button'>
-                    <h5 class='favourited-button-title'>
-                        {% if f['Done'] %}
-                            &#9989;
-                        {% endif %}
-                        {{ f['Title'] }}
-                    </h5>
-                    <div class='favourited-button-desc'>{{ f['Desc'] }}</div>
-                </a>
-            {% endfor %}
+        <h4>Hi, {{ name }}!</h4>
     </div>
+    {% if favourited != [] %}
+        <div class="content-section">
+            <legend class="border-bottom mb-4">Favourited Tasks</legend>
+            <div class='favourited-button-container'>
+                {% for f in favourited %}
+                    <a href='/tasks#{{ f['TaskID'] }}' class='favourited-button'>
+                        <h5 class='favourited-button-title'>
+                            {% if f['Done'] %}
+                                &#9989;
+                            {% endif %}
+                            {{ f['Title'] }}
+                        </h5>
+                        <div class='favourited-button-desc'>{{ f['Desc'] }}</div>
+                    </a>
+                {% endfor %}
+        </div>
+    {% endif %}
     </div>
 {% endblock %}

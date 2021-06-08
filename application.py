@@ -48,7 +48,42 @@ def get_secret_hash(username):
 
 # add user to the user pool
 # return '' or exception message
-def cognito_sign_up(email, username, password, name):
+# def cognito_sign_up(email, username, password, name):
+#     try:
+#         response = client.sign_up(
+#             ClientId=CLIENT_ID,
+#             SecretHash=get_secret_hash(username),
+#             Username=username,
+#             Password=password, 
+#             UserAttributes=[
+#                 {
+#                     'Name': "name",
+#                     'Value': name
+#                 },
+#                 {
+#                     'Name': "email",
+#                     'Value': email
+#                 }
+#             ],
+#             ValidationData=[
+#                 {
+#                     'Name': "email",
+#                     'Value': email
+#                 },
+#                 {
+#                     'Name': "custom:username",
+#                     'Value': username
+#                 }
+#             ]
+#         )
+#     except Exception as e:
+#         return e
+
+#     return ''
+
+# add user to the user pool
+# return '' or exception message
+def cognito_sign_up_new(email, username, password, firstname, lastname, phone, img):
     try:
         response = client.sign_up(
             ClientId=CLIENT_ID,
@@ -57,16 +92,24 @@ def cognito_sign_up(email, username, password, name):
             Password=password, 
             UserAttributes=[
                 {
-                    'Name': "name",
-                    'Value': name
+                    'Name': "given_name",
+                    'Value': firstname
+                },
+                {
+                    'Name': "family_name",
+                    'Value': lastname
+                },
+                {
+                    'Name': "phone_number",
+                    'Value': phone
+                },
+                {
+                    'Name': "picture",
+                    'Value': img
                 },
                 {
                     'Name': "email",
                     'Value': email
-                # },
-                # {
-                #     'Name': "custom:customfieldname",
-                #     'Value': 'custom field value 3'
                 }
             ],
             ValidationData=[
@@ -84,6 +127,8 @@ def cognito_sign_up(email, username, password, name):
         return e
 
     return ''
+
+
 
 # check if user can provide a correct code sent
 # return '' or exception message
@@ -159,6 +204,8 @@ def cognito_get_user(accesstoken):
     except Exception as e:
         print(e)
     
+    # new user attributes:
+    # loggedinEmail, loggedinFname, loggedinLname, loggedinPhone, loggedinPic, loggedinUsername
     # response will look like:
     # {
     #     'Username': 'user444',
@@ -184,15 +231,13 @@ def cognito_get_user(accesstoken):
     # }
     return response
 
-# empty session
 def emptySession():
     for key in list(session.keys()):
-        if key != 'csrftoken':
-            session.pop(key, None)
+        session.pop(key, None)
 
 def isLoggedIn():
     for key in list(session.keys()):
-        if key != 'csrftoken':
+        if key != '_flashes':
             return True
     return False
     # return session != {}
@@ -367,9 +412,13 @@ def formatDate(original):
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     return original[8:] + ' ' + months[int(month)-1] + ' ' + original[:4]
 
+def getExtension(filename):
+    extension = filename[filename.rfind('.'):len(filename)]
+    return extension
+
 # returns new file name including extension
 def uploadToS3(file, subtaskid):
-    extension = file.filename[file.filename.rfind('.'):len(file.filename)]
+    extension = getExtension(file.filename)
     realfilename = subtaskid + extension
 
     response = s3client.upload_fileobj(file, bucketname, realfilename, ExtraArgs={'ACL': 'public-read'})
@@ -378,6 +427,10 @@ def uploadToS3(file, subtaskid):
 def deleteFromS3(filename):
     response = s3client.delete_object(Bucket = bucketname, Key = filename)
 
+
+
+def uploadProfileImgToS3(file, imgname):
+    response = s3client.upload_fileobj(file, bucketname, imgname, ExtraArgs={'ACL': 'public-read'})
 
 
 
@@ -392,17 +445,22 @@ def root():
 @application.route("/register", methods=["GET", "POST"])
 def register():
     if isLoggedIn():
-        return redirect("/")
+        return redirect("/home")
     else:
         if request.method == "POST":
             email = request.form["register-em"]
             username = request.form["register-un"]
             password = request.form["register-pw"]
-            name = 'random name' ##
-            tryregistering = cognito_sign_up(email, username, password, name)
+            firstname = request.form["register-fn"]
+            lastname = request.form["register-ln"]
+            phone = request.form["register-pn"]
+            img = request.files["register-pi"]
+            realimgname = username + getExtension(img.filename)
+            tryregistering = cognito_sign_up_new(email, username, password, firstname, lastname, phone, realimgname)
 
             if tryregistering == '': # no exception
                 flash("Registration Successful..!!", 'success')
+                uploadProfileImgToS3(img, realimgname)
                 return redirect(url_for('verification', username=username))
 
             else: # somethings wrong
@@ -433,7 +491,7 @@ def verification(username):
 @application.route("/login", methods=["GET", "POST"])
 def login():
     if isLoggedIn():
-        return redirect("/")
+        return redirect("/home")
     else:
         if request.method == "POST":
             username = request.form['login-un']
@@ -451,10 +509,16 @@ def login():
                 for a in cognito_get_user(accesstoken)['UserAttributes']:
                     if a['Name'] == 'email':
                         session['loggedinEmail'] = a['Value']
-                    if a['Name'] == 'name':
-                        session['loggedinName'] = a['Value']
+                    if a['Name'] == 'given_name':
+                        session['loggedinFname'] = a['Value']
+                    if a['Name'] == 'family_name':
+                        session['loggedinLname'] = a['Value']
+                    if a['Name'] == 'phone_number':
+                        session['loggedinPhone'] = a['Value']
+                    if a['Name'] == 'picture':
+                        session['loggedinPic'] = a['Value']
                 flash("Login Successful..!!")
-                return redirect('/tasks')
+                return redirect('/home')
 
         return render_template("login.html")
 
@@ -557,12 +621,18 @@ def tasks():
 
 @application.route("/home", methods=["GET", "POST"])
 def home():
+    print(session)
     # if request.method == "POST":
     #     return
+    firstname = ''
+    try:
+        firstname = session['loggedinFname']
+    except:
+        firstname = session['loggedinUsername']
     
     favourited = getAllFavouritedTasksByCurrentUser()
     
-    return render_template("home.html", favourited=favourited)
+    return render_template("home.html", favourited=favourited, name=firstname)
         # tasks=getAllTasksByCurrentUser(),
         # getAllSubtasksByParent=getAllSubtasksByParent,
         # isChecked=isChecked,

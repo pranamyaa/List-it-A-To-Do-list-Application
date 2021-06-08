@@ -28,187 +28,193 @@
         </form>
         </div>
     </div>
-    <div class = "content-section">
-        <h3>All Tasks</h3>
-        <div class="accordion accordion-flush" id="accordionFlushExample">
-            {% for t in tasks %}
-              <div class="accordion-item">
-                <div class='jump-here' id='{{ t['TaskID'] }}'></div>
-                <h2 class="accordion-header" id= "flush-heading-{{ loop.index }}">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-{{ loop.index }}" aria-expanded="false" aria-controls="flush-collapse-{{ loop.index }}" >
-                    {{ loop.index }}.
-                    {% if t['Fav'] %}
-                        <!-- (favourited) -->
-                        &#11088;
-                    {% endif %}
-                    {% if t['Done'] %}
-                        <!-- (done) -->
-                        &#9989;
-                    {% endif %}
-                    {{ t['Title'] }}
-                  </button>
-                </h2>
-                <div id= "flush-collapse-{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="flush-heading-{{ loop.index }}" data-bs-parent="#accordionFlushExample">
-                  <div class="accordion-body">
-                    <p>Task Description: {{ t['Desc'] }}</p>
-                    <button class="btn btn-outline-info" onclick="toggleeditform(this)">Edit this task</button>
-                    <div style='display: none;'>
-                        <br>
-                        <form name="update-task-form" method="post" class='form-box'>
-                            <input type="hidden" name="tasks-type" value='update-task'>
-                            <input type="hidden" name="update-task-id" value='{{ t['TaskID'] }}'>
-                            <p class="form-group">
-                                <label class="form-control-label">Title:</label>
-                                <input class="form-control form-control-lg" type="text" name="update-task-title" value='{{ t['Title'] }}' required>
-                            </p>
-                            <p class="form-group">
-                                <label class="form-control-label">Description:</label>
-                                <input class="form-control form-control-lg" type="text" name="update-task-desc" value='{{ t['Desc'] }}'>
-                            </p>
-                            <div class="form-row">
-                                {% if hasSubtask(t['TaskID'])==False %}
-                                    <p class="form-group col-md-6">
-                                        <label class="form-control-label">Completed:</label>
-                                        <input type="checkbox" name="update-task-done" value='done' {{ isChecked(t['Done']) }}>
-                                    </p>
-                                {% endif %}
-                                <p class="form-group col-md-6">
-                                    <label class="form-control-label">Make it Favourite?:</label>
-                                    <input type="checkbox" name="update-task-fav" value='fav' {{ isChecked(t['Fav']) }}>
-                                </p>
-                            </div>
-                            <input class="btn btn-outline-info" type="submit" value="Update">
-                        </form>
-                    </div>
-                    <form name='delete-task-form' method='post' onsubmit="return confirmdelete('task')">
-                        <br>
-                        <input type="hidden" name="tasks-type" value='delete-task'>
-                        <input type="hidden" name="delete-task-id" value='{{ t['TaskID'] }}'>
-                        <input class="btn btn-outline-info" type='submit' value='Delete this task'>
-                    </form>
-                    <div>
-                        <br>
-                        <button class="btn btn-outline-info" onclick="toggleeditform(this)">Add new subtask</button>
+    {% if tasks != [] %}
+        <div class = "content-section">
+            <h3>All Tasks</h3>
+            <div class="accordion accordion-flush" id="accordionFlushExample">
+                {% for t in tasks %}
+                <div class="accordion-item">
+                    <div class='jump-here' id='{{ t['TaskID'] }}'></div>
+                    <h2 class="accordion-header" id= "flush-heading-{{ loop.index }}">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-{{ loop.index }}" aria-expanded="false" aria-controls="flush-collapse-{{ loop.index }}" >
+                        {{ loop.index }}.
+                        {% if t['Fav'] %}
+                            <!-- (favourited) -->
+                            &#11088;
+                        {% endif %}
+                        {% if t['Done'] %}
+                            <!-- (done) -->
+                            &#9989;
+                        {% endif %}
+                        {{ t['Title'] }}
+                    </button>
+                    </h2>
+                    <div id= "flush-collapse-{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="flush-heading-{{ loop.index }}" data-bs-parent="#accordionFlushExample">
+                    <div class="accordion-body">
+                        <p>Task Description: {{ t['Desc'] }}</p>
+                        <button class="btn btn-outline-info" onclick="toggleeditform(this)">Edit this task</button>
                         <div style='display: none;'>
                             <br>
-                            <form name='add-sub-form' method='post' enctype='multipart/form-data' class='form-box'>
-                                <input type="hidden" name="tasks-type" value='add-subtask'>
-                                <input type="hidden" name="add-sub-parent" value='{{ t['TaskID'] }}'>
+                            <form name="update-task-form" method="post" class='form-box'>
+                                <input type="hidden" name="tasks-type" value='update-task'>
+                                <input type="hidden" name="update-task-id" value='{{ t['TaskID'] }}'>
                                 <p class="form-group">
                                     <label class="form-control-label">Title:</label>
-                                    <input class="form-control form-control-lg" type="text" name="add-sub-title" required>
+                                    <input class="form-control form-control-lg" type="text" name="update-task-title" value='{{ t['Title'] }}' required>
                                 </p>
                                 <p class="form-group">
                                     <label class="form-control-label">Description:</label>
-                                    <input class="form-control form-control-lg" type="text" name="add-sub-desc">
+                                    <input class="form-control form-control-lg" type="text" name="update-task-desc" value='{{ t['Desc'] }}'>
                                 </p>
                                 <div class="form-row">
-                                    <p class="form-group col-md-5">
-                                        <label class="form-control-label">Due:</label>
-                                        <input class="form-control form-control-lg" type="date" name='add-sub-due'>
-                                    </p>
-                                    <p class="form-group col-md-7">
-                                        <label class="form-control-label">Image:</label>
-                                        <!-- <input type="text" name='add-sub-image'> -->
-                                        <input class="form-control form-control-lg" type="file" name="add-sub-image" accept="image/png, image/jpeg">
+                                    {% if hasSubtask(t['TaskID'])==False %}
+                                        <p class="form-group col-md-6">
+                                            <label class="form-control-label">Completed:</label>
+                                            <input type="checkbox" name="update-task-done" value='done' {{ isChecked(t['Done']) }}>
+                                        </p>
+                                    {% endif %}
+                                    <p class="form-group col-md-6">
+                                        <label class="form-control-label">Make it Favourite?:</label>
+                                        <input type="checkbox" name="update-task-fav" value='fav' {{ isChecked(t['Fav']) }}>
                                     </p>
                                 </div>
-                                <p class="form-group">
-                                    <label class="form-control-label">URL:</label>
-                                    <input class="form-control form-control-lg" type="text" name='add-sub-url'>
-                                </p>
-                                <p class="form-group">
-                                    <label class="form-control-label">Completed?:</label>
-                                    <input type="checkbox" name="add-sub-done" value='done'>
-                                </p>
-                                <input class="btn btn-outline-info" type="submit" value="Add">
+                                <input class="btn btn-outline-info" type="submit" value="Update">
                             </form>
                         </div>
-                    </div>
-                    <br>
-                    <h6>Subtasks List : </h6>
-                    <div class="accordion" id="accordionExample">
-                        {% for s in getAllSubtasksByParent(t['TaskID']) %}
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="heading-{{ loop.index }}">
-                                      <button class="accordion-button btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ loop.index }}" aria-expanded="true" aria-controls="collapse-{{ loop.index }}">
-                                        {{ loop.index }}
-                                        {% if s['Done'] %}
-                                            <!-- (done) -->
-                                            &#9989;
-                                        {% endif %}
-                                        {{ s['Title'] }}
-                                      </button>
-                                </h2>
-                                <div id="collapse-{{ loop.index }}" class="accordion-collapse collapse show" aria-labelledby="heading-{{ loop.index }}" data-bs-parent="#accordionExample">
-                                      <div class="accordion-body">
-                                            <p>Subtask Description: {{ s['Desc'] }}</p>
-                                            <p>Subtask Due Date: {{ s['Due'] }}</p>
-                                            {% if s['Url'] != '' %}
-                                                <p>Subtask Link: <a href='{{ s['Url'] }}'>{{ s['Url'] }}</a></p>
-                                            {% endif %}
-                                            {% if s['Image'] != '' %}
-                                                <div>Image: <img class="img-fluid" src="https://{{ bucketname }}.s3.amazonaws.com/{{ s['Image'] }}" width="200" height="200"></div>
-                                            {% endif %}
-                                            <br>
-                                            <button class="btn btn-outline-info" onclick="toggleeditform(this)">Edit this subtask</button>
-                                            <div style='display: none;'>
-                                                <br>
-                                                <form name="update-sub-form" method="post" enctype="multipart/form-data" class='form-box'>
-                                                    <input type="hidden" name="tasks-type" value='update-subtask'>
-                                                    <input type="hidden" name="update-sub-parent" value='{{ s['ParentTask'] }}'>
-                                                    <input type="hidden" name="update-sub-id" value='{{ s['SubtaskID'] }}'>
-                                                    <p class="form-group">
-                                                        <label class="form-control-label">Title:</label>
-                                                        <input class="form-control form-control-lg" type="text" name="update-sub-title" value='{{ s['Title'] }}' required>
-                                                    </p>
-                                                    <p class="form-group">
-                                                        <label class="form-control-label">Description:</label>
-                                                        <input class="form-control form-control-lg" type="text" name="update-sub-desc" value='{{ s['Desc'] }}'>
-                                                    </p>
-                                                    <p class="form-group">
-                                                        <label class="form-control-label">Due date:</label>
-                                                        <input class="form-control form-control-lg" type="date" name="update-sub-due" value='{{ s['Due'] }}'>
-                                                    </p>
-                                                    <p class="form-group">
-                                                        <label class="form-control-label">Done:</label>
-                                                        <input type="checkbox" name="update-sub-done" value='done' {{ isChecked(s['Done']) }}>
-                                                    </p>
-                                                    <p class="form-group">
-                                                        <label class="form-control-label">Image:</label>
-                                                        <input class="form-control form-control-lg" type="hidden" name="update-sub-image-old" value='{{ s['Image'] }}'>
-                                                        {% if s['Image'] == '' %}
-                                                            <input type="file" name="update-sub-image" accept="image/png, image/jpeg">
-                                                        {% else %}
-                                                            <input class="form-control form-control-lg" type="file" name="update-sub-image" accept="image/png, image/jpeg" onchange="changeimg(this)">
-                                                            <label class="form-control-label">Keep uploaded image</label>
-                                                            <input type="checkbox" name="update-sub-image-keep" value="keep-image" onclick="removeimgcheckbox(this)" checked>
-                                                        {% endif %}
-                                                    </p>
-                                                    <p class="form-group">
-                                                        <label class="form-control-label">URL:</label>
-                                                        <input class="form-control form-control-lg" type="text" name="update-sub-url" value='{{ s['Url'] }}'>
-                                                    </p>
-                                                    <input class="btn btn-outline-info" type="submit" value="Update">
-                                                </form>
-                                            </div>
-                                            <form name='delete-sub-form' method='post' onsubmit="return confirmdelete('subtask')">
-                                                    <br>
-                                                    <input type="hidden" name="tasks-type" value='delete-subtask'>
-                                                    <input type="hidden" name="delete-sub-parent" value='{{ s['ParentTask'] }}'>
-                                                    <input type="hidden" name="delete-sub-id" value='{{ s['SubtaskID'] }}'>
-                                                    <input type="hidden" name="delete-sub-image" value='{{ s['Image'] }}'>
-                                                    <input class="btn btn-outline-info" type='submit' value='Delete this subtask'>
-                                            </form>
-                                      </div>
-                                </div>
+                        <form name='delete-task-form' method='post' onsubmit="return confirmdelete('task')">
+                            <br>
+                            <input type="hidden" name="tasks-type" value='delete-task'>
+                            <input type="hidden" name="delete-task-id" value='{{ t['TaskID'] }}'>
+                            <input class="btn btn-outline-info" type='submit' value='Delete this task'>
+                        </form>
+                        <div>
+                            <br>
+                            <button class="btn btn-outline-info" onclick="toggleeditform(this)">Add new subtask</button>
+                            <div style='display: none;'>
+                                <br>
+                                <form name='add-sub-form' method='post' enctype='multipart/form-data' class='form-box'>
+                                    <input type="hidden" name="tasks-type" value='add-subtask'>
+                                    <input type="hidden" name="add-sub-parent" value='{{ t['TaskID'] }}'>
+                                    <p class="form-group">
+                                        <label class="form-control-label">Title:</label>
+                                        <input class="form-control form-control-lg" type="text" name="add-sub-title" required>
+                                    </p>
+                                    <p class="form-group">
+                                        <label class="form-control-label">Description:</label>
+                                        <input class="form-control form-control-lg" type="text" name="add-sub-desc">
+                                    </p>
+                                    <div class="form-row">
+                                        <p class="form-group col-md-5">
+                                            <label class="form-control-label">Due:</label>
+                                            <input class="form-control form-control-lg" type="date" name='add-sub-due'>
+                                        </p>
+                                        <p class="form-group col-md-7">
+                                            <label class="form-control-label">Image:</label>
+                                            <!-- <input type="text" name='add-sub-image'> -->
+                                            <input class="form-control form-control-lg" type="file" name="add-sub-image" accept="image/png, image/jpeg">
+                                        </p>
+                                    </div>
+                                    <p class="form-group">
+                                        <label class="form-control-label">URL:</label>
+                                        <input class="form-control form-control-lg" type="text" name='add-sub-url'>
+                                    </p>
+                                    <p class="form-group">
+                                        <label class="form-control-label">Completed?:</label>
+                                        <input type="checkbox" name="add-sub-done" value='done'>
+                                    </p>
+                                    <input class="btn btn-outline-info" type="submit" value="Add">
+                                </form>
                             </div>
-                        {% endfor %}
+                        </div>
+                        <br>
+                        <h6>Subtasks List : </h6>
+                        <div class="accordion" id="accordionExample">
+                            {% for s in getAllSubtasksByParent(t['TaskID']) %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading-{{ loop.index }}">
+                                        <button class="accordion-button btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ loop.index }}" aria-expanded="true" aria-controls="collapse-{{ loop.index }}">
+                                            {{ loop.index }}
+                                            {% if s['Done'] %}
+                                                <!-- (done) -->
+                                                &#9989;
+                                            {% endif %}
+                                            {{ s['Title'] }}
+                                        </button>
+                                    </h2>
+                                    <div id="collapse-{{ loop.index }}" class="accordion-collapse collapse show" aria-labelledby="heading-{{ loop.index }}" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body">
+                                                <p>Subtask Description: {{ s['Desc'] }}</p>
+                                                <p>Subtask Due Date: {{ s['Due'] }}</p>
+                                                {% if s['Url'] != '' %}
+                                                    <p>Subtask Link: <a href='{{ s['Url'] }}'>{{ s['Url'] }}</a></p>
+                                                {% endif %}
+                                                {% if s['Image'] != '' %}
+                                                    <div>Image: <img class="img-fluid" src="https://{{ bucketname }}.s3.amazonaws.com/{{ s['Image'] }}" width="200" height="200"></div>
+                                                {% endif %}
+                                                <br>
+                                                <button class="btn btn-outline-info" onclick="toggleeditform(this)">Edit this subtask</button>
+                                                <div style='display: none;'>
+                                                    <br>
+                                                    <form name="update-sub-form" method="post" enctype="multipart/form-data" class='form-box'>
+                                                        <input type="hidden" name="tasks-type" value='update-subtask'>
+                                                        <input type="hidden" name="update-sub-parent" value='{{ s['ParentTask'] }}'>
+                                                        <input type="hidden" name="update-sub-id" value='{{ s['SubtaskID'] }}'>
+                                                        <p class="form-group">
+                                                            <label class="form-control-label">Title:</label>
+                                                            <input class="form-control form-control-lg" type="text" name="update-sub-title" value='{{ s['Title'] }}' required>
+                                                        </p>
+                                                        <p class="form-group">
+                                                            <label class="form-control-label">Description:</label>
+                                                            <input class="form-control form-control-lg" type="text" name="update-sub-desc" value='{{ s['Desc'] }}'>
+                                                        </p>
+                                                        <p class="form-group">
+                                                            <label class="form-control-label">Due date:</label>
+                                                            <input class="form-control form-control-lg" type="date" name="update-sub-due" value='{{ s['Due'] }}'>
+                                                        </p>
+                                                        <p class="form-group">
+                                                            <label class="form-control-label">Done:</label>
+                                                            <input type="checkbox" name="update-sub-done" value='done' {{ isChecked(s['Done']) }}>
+                                                        </p>
+                                                        <p class="form-group">
+                                                            <label class="form-control-label">Image:</label>
+                                                            <input class="form-control form-control-lg" type="hidden" name="update-sub-image-old" value='{{ s['Image'] }}'>
+                                                            {% if s['Image'] == '' %}
+                                                                <input type="file" name="update-sub-image" accept="image/png, image/jpeg">
+                                                            {% else %}
+                                                                <input class="form-control form-control-lg" type="file" name="update-sub-image" accept="image/png, image/jpeg" onchange="changeimg(this)">
+                                                                <label class="form-control-label">Keep uploaded image</label>
+                                                                <input type="checkbox" name="update-sub-image-keep" value="keep-image" onclick="removeimgcheckbox(this)" checked>
+                                                            {% endif %}
+                                                        </p>
+                                                        <p class="form-group">
+                                                            <label class="form-control-label">URL:</label>
+                                                            <input class="form-control form-control-lg" type="text" name="update-sub-url" value='{{ s['Url'] }}'>
+                                                        </p>
+                                                        <input class="btn btn-outline-info" type="submit" value="Update">
+                                                    </form>
+                                                </div>
+                                                <form name='delete-sub-form' method='post' onsubmit="return confirmdelete('subtask')">
+                                                        <br>
+                                                        <input type="hidden" name="tasks-type" value='delete-subtask'>
+                                                        <input type="hidden" name="delete-sub-parent" value='{{ s['ParentTask'] }}'>
+                                                        <input type="hidden" name="delete-sub-id" value='{{ s['SubtaskID'] }}'>
+                                                        <input type="hidden" name="delete-sub-image" value='{{ s['Image'] }}'>
+                                                        <input class="btn btn-outline-info" type='submit' value='Delete this subtask'>
+                                                </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
-                  </div>
+                    </div>
                 </div>
-              </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
-    </div>
+    {% else %}
+        <div class = "content-section">
+            There aren't any existing tasks at the moment.<br>Please make a new task by clicking Add new task button.
+        </div>
+    {% endif %}
 {% endblock %}
