@@ -166,3 +166,50 @@ a.article-title:hover {
   padding: 10px;
   border-radius: 8px;
 }
+
+.favourited-button-container {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(100px, 1fr));
+}
+
+.favourited-button {
+  background-color: #bbd8df;
+  margin: 5px;
+  max-width: calc(100%);
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: transform .1s;
+}
+
+.favourited-button:hover {
+  background-color: #d1e4ea;
+  transform: scale(1.05);
+}
+
+.favourited-button:active {
+  background-color: #7aaabd;
+  transform: scale(0.98);
+}
+
+.favourited-button > * {
+  color: black;
+}
+
+.favourited-button-title {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.favourited-button-desc {
+  font-size: 90%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.jump-here {
+  /* height: 56px; */
+  margin-top: -56px;
+  position: absolute;
+}

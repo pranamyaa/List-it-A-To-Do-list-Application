@@ -261,6 +261,22 @@ def getAllTasksByCurrentUser():
     return response.get("Items")
 
 # returns [] if empty
+def getAllFavouritedTasksByCurrentUser():
+    scan_kwargs = {
+        'FilterExpression': "#o = :u and Fav=:f",
+        "ExpressionAttributeValues": {
+            ':u': session['loggedinUsername'],
+            ':f': True
+        },
+        'ExpressionAttributeNames': {
+            "#o": "Owner"
+        }
+    }
+    response = tasktable.scan(**scan_kwargs)
+
+    return response.get("Items")
+
+# returns [] if empty
 def getAllSubtasksByParent(parenttask):
     scan_kwargs = {
         'FilterExpression': "ParentTask = :p",
@@ -367,6 +383,10 @@ def deleteFromS3(filename):
 
 @application.route("/")
 def root():
+    if isLoggedIn():
+        return redirect("/home")
+    else:
+        return redirect('/login')
     return render_template("index.html")
 
 @application.route("/register", methods=["GET", "POST"])
@@ -534,6 +554,19 @@ def tasks():
         formatDate=formatDate,
         hasSubtask=hasSubtask,
         bucketname=bucketname)
+
+@application.route("/home", methods=["GET", "POST"])
+def home():
+    # if request.method == "POST":
+    #     return
+    
+    favourited = getAllFavouritedTasksByCurrentUser()
+    
+    return render_template("home.html", favourited=favourited)
+        # tasks=getAllTasksByCurrentUser(),
+        # getAllSubtasksByParent=getAllSubtasksByParent,
+        # isChecked=isChecked,
+        # formatDate=formatDate)
 
 if __name__ == "__main__":
     application.run(debug=True)
