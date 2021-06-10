@@ -36,6 +36,7 @@ subtable = dynamodb.Table('Subtask')
 
 s3client = boto3.client('s3', region_name='us-east-1')
 bucketname = 'cca3imgs'
+bucketnameuser = 'cca3users'
 
 
 
@@ -312,9 +313,10 @@ def strToTime(timestring):
 
 def addTask(title, desc, done, fav):
     response = tasktable.put_item(
-       Item = {
+        Item = {
             'Owner': session['loggedinUsername'],
             'TaskID': getTimestamp(),
+            'Email': session['loggedinEmail'],
             'Title': title,
             'Desc': desc,
             'Done': done,
@@ -324,7 +326,7 @@ def addTask(title, desc, done, fav):
 
 def addSubtask(parenttask, subtaskid, title, desc, due, done, image, url):
     response = subtable.put_item(
-       Item = {
+        Item = {
             'ParentTask': parenttask,
             'SubtaskID': subtaskid,
             'Title': title,
@@ -452,7 +454,7 @@ def deleteSubtask(parenttask, subtaskid, image):
     subtable.delete_item(Key = { 'ParentTask': parenttask, 'SubtaskID': subtaskid })
 
     if image != '':
-        deleteFromS3(image)
+        deleteFromS3(image, 'task')
 
 def hasSubtask(parenttask):
     if getAllSubtasksByParent(parenttask) == []:
@@ -482,8 +484,13 @@ def uploadToS3(file, subtaskid):
     response = s3client.upload_fileobj(file, bucketname, realfilename, ExtraArgs={'ACL': 'public-read'})
     return realfilename
 
-def deleteFromS3(filename):
-    response = s3client.delete_object(Bucket = bucketname, Key = filename)
+def deleteFromS3(filename, table):
+    if table == 'task':
+        thisbucketname = bucketname
+    if table == 'user':
+        thisbucketname = bucketnameuser
+    
+    response = s3client.delete_object(Bucket = thisbucketname, Key = filename)
 
 
 def getUserDetails(accesstoken):
@@ -513,7 +520,7 @@ def getUserDetails(accesstoken):
     return ''
 
 def uploadProfileImgToS3(file, imgname):
-    response = s3client.upload_fileobj(file, bucketname, imgname, ExtraArgs={'ACL': 'public-read'})
+    response = s3client.upload_fileobj(file, bucketnameuser, imgname, ExtraArgs={'ACL': 'public-read'})
 
 
 
@@ -642,7 +649,7 @@ def tasks():
             if request.files['update-sub-image'].filename != '':
                 # if old image exists
                 if request.form['update-sub-image-old'] != '':
-                    deleteFromS3(request.form['update-sub-image-old'])
+                    deleteFromS3(request.form['update-sub-image-old'], 'task')
                 imgname = uploadToS3(request.files['update-sub-image'], request.form['update-sub-id'])
             # if new image is not uploaded
             else:
@@ -652,7 +659,7 @@ def tasks():
                 # remove old image if exists
                 else:
                     if request.form['update-sub-image-old'] != '':
-                        deleteFromS3(request.form['update-sub-image-old'])
+                        deleteFromS3(request.form['update-sub-image-old'], 'task')
             updateSubtask(request.form['update-sub-parent'], request.form['update-sub-id'], request.form['update-sub-title'], request.form['update-sub-desc'], request.form['update-sub-due'], updatesubdone, imgname, request.form['update-sub-url'])
 
         # delete task
@@ -691,7 +698,7 @@ def tasks():
 
 @application.route("/home", methods=["GET", "POST"])
 def home():
-    print(session)
+    # print(session)
     # if request.method == "POST":
     #     return
     name = ''
@@ -744,7 +751,7 @@ def user():
                 ## update dynamodb img to ''
                 updateUser(removeimg=True)
                 ## remove image from s3
-                deleteFromS3(request.form['update-user-image-old'])
+                deleteFromS3(request.form['update-user-image-old'], 'user')
             
             # new image is added
             if newimg.filename != '':
@@ -752,7 +759,7 @@ def user():
                 if request.form['update-user-image-old']:
                     print('replace image')
                     ## remove old image from s3
-                    deleteFromS3(request.form['update-user-image-old'])
+                    deleteFromS3(request.form['update-user-image-old'], 'user')
 
                 ## add image to s3
                 print('add new image')
@@ -795,7 +802,7 @@ def user():
     except:
         pass
 
-    return render_template("user.html", bucketname=bucketname,
+    return render_template("user.html", bucketname=bucketnameuser,
         username=session['loggedinUsername'], email=session['loggedinEmail'],
         fname=fname, lname=lname, phone=phone, pic=pic)
 
