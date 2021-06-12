@@ -13,15 +13,16 @@ application = Flask(__name__)
 application.secret_key = "random"
 
 ##PK
-# USER_POOL_ID = 'us-east-2_ruiTY0hP5'
-# CLIENT_ID = '14d1pjd3tjchpg77kcld5oam6q'
-# CLIENT_SECRET = 'jgrtpnhoq01h77tt9kjh74k1gn22r6l4l7g3ctc8bhtfoigrmkq'
-# client = boto3.client('cognito-idp', region_name='us-east-2')
-# dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-# s3client = boto3.client('s3', region_name='us-east-2')
-# tasktable = dynamodb.Table('Task')
-# subtable = dynamodb.Table('Subtask')
-# bucketname = 'cca3images'
+#USER_POOL_ID = 'us-east-2_ruiTY0hP5'
+#CLIENT_ID = '14d1pjd3tjchpg77kcld5oam6q'
+#CLIENT_SECRET = 'jgrtpnhoq01h77tt9kjh74k1gn22r6l4l7g3ctc8bhtfoigrmkq'
+#client = boto3.client('cognito-idp', region_name='us-east-2')
+#dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+#s3client = boto3.client('s3', region_name='us-east-2')
+#tasktable = dynamodb.Table('Task')
+#subtable = dynamodb.Table('Subtask')
+#bucketname = 'cca3images'
+#bucketnameuser = 'cca3userprofiles'
 
 #Sohee
 USER_POOL_ID = 'us-east-1_ML8n8zEda'
@@ -289,8 +290,6 @@ def updateUser(fname='', lname='', phone='', img='', removeimg=False):
 
     return ''
 
-
-
 # return current timestamp string
 def getTimestamp():
     return str(datetime.datetime.now())
@@ -461,8 +460,6 @@ def hasSubtask(parenttask):
         return False
     return True
 
-
-
 # returns formatted date 'yyyy-mm-dd' to 'dd Mon yyyy'
 # or '' to ''
 def formatDate(original):
@@ -492,7 +489,6 @@ def deleteFromS3(filename, table):
     
     response = s3client.delete_object(Bucket = thisbucketname, Key = filename)
 
-
 def getUserDetails(accesstoken):
     try:
         getuser = cognito_get_user(accesstoken)
@@ -521,7 +517,6 @@ def getUserDetails(accesstoken):
 
 def uploadProfileImgToS3(file, imgname):
     response = s3client.upload_fileobj(file, bucketnameuser, imgname, ExtraArgs={'ACL': 'public-read'})
-
 
 
 @application.route("/")
