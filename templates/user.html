@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
-    <div class="content-section">
-        <legend class="border-bottom mb-4">Profile</legend>
-        <div>
+    <div class = "content-section">
+        <fieldset class = "form-group">
+            <legend class="border-bottom mb-4">My Profile</legend>
             <div class="profile-top">
                 {% if pic != '' %}
                     <img class="profile-img" src="https://{{ bucketname }}.s3.amazonaws.com/{{ pic }}"><br>
@@ -31,7 +31,7 @@
                     <button class="btn btn-outline-info profile-button text" onclick="toggleeprofileditform('phone')">Edit phone number</button>
                 </div>
             </div>
-        </div>
+        </fieldset>
         <div>
             <div id='profile-edit-form-img' style='display: none;'>
                 <br>
@@ -82,5 +82,6 @@
                     <input class="btn btn-outline-info" type="submit" value="Edit">
                 </form>
             </div>
-</div>
+        </div>
+    </div>
 {% endblock %}

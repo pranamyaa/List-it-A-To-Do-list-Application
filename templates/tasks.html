@@ -37,7 +37,7 @@
                     <div class='jump-here' id='{{ t['TaskID'] }}'></div>
                     <h2 class="accordion-header" id= "flush-heading-{{ loop.index }}">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-{{ loop.index }}" aria-expanded="false" aria-controls="flush-collapse-{{ loop.index }}" >
-                        {{ loop.index }}.
+                        {{ loop.index }}.{{ t['Title'] }}
                         {% if t['Fav'] %}
                             <!-- (favourited) -->
                             &#11088;
@@ -46,7 +46,7 @@
                             <!-- (done) -->
                             &#9989;
                         {% endif %}
-                        {{ t['Title'] }}
+
                     </button>
                     </h2>
                     <div id= "flush-collapse-{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="flush-heading-{{ loop.index }}" data-bs-parent="#accordionFlushExample">
@@ -133,12 +133,11 @@
                                 <div class="accordion-item">
                                     <h2 class="accordion-header" id="heading-{{ loop.index }}">
                                         <button class="accordion-button btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ loop.index }}" aria-expanded="true" aria-controls="collapse-{{ loop.index }}">
-                                            {{ loop.index }}
+                                            {{ loop.index }}.{{ s['Title'] }}
                                             {% if s['Done'] %}
                                                 <!-- (done) -->
                                                 &#9989;
                                             {% endif %}
-                                            {{ s['Title'] }}
                                         </button>
                                     </h2>
                                     <div id="collapse-{{ loop.index }}" class="accordion-collapse collapse show" aria-labelledby="heading-{{ loop.index }}" data-bs-parent="#accordionExample">
